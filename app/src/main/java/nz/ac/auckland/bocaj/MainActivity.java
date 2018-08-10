@@ -21,9 +21,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int xCentre;
     private int yCentre;
 
-    //depends on calibrated pitch and roll (updates if dwell for 5 seconds)
-    private float pitchOffset = 0;
-    private float rollOffset = 0;
+    //depends on calibrated pitch and roll
+    private float pitchOffset;
+    private float rollOffset;
 
     private float[] rotationMatrix = new float[9];
     private float[] gravity = new float[3];
@@ -46,10 +46,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         });
 
-        initialiseCalculations();
+        initialiseCalibration();
     }
 
-    private void initialiseCalculations() {
+    private void initialiseCalibration() {
         Display mdisp = getWindowManager().getDefaultDisplay();
         Point mdispSize = new Point();
         mdisp.getSize(mdispSize);
@@ -57,6 +57,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         int maxY = mdispSize.y;
         xCentre = maxX / 2;
         yCentre = maxY / 2;
+
+        pitchOffset = 0;
+        rollOffset = 0;
+    }
+
+    /**
+     * TODO later: updates offset if dwell for 5 seconds
+     */
+    private void recalibrate() {
+        pitchOffset = 0; //pitch from sensor
+        rollOffset = 0; //roll from sensor
     }
 
     @Override
