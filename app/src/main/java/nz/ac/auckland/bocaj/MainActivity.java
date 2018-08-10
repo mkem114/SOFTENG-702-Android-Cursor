@@ -1,5 +1,6 @@
 package nz.ac.auckland.bocaj;
 
+import android.content.Context;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -29,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] gravity = new float[3];
     private float[] geomagnetic = new float[3];
     private float[] orientationValues = new float[3];
+
+    private SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,6 +74,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
@@ -83,16 +105,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
         }
 
-        SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
+        sensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
         /*
         TODO may need to transform
         //https://developer.android.com/reference/android/hardware/SensorManager.html#remapCoordinateSystem(float[],%20int,%20int,%20float[])
         float[] transformedRotationMatrix = new float[9];
         //eg Using the device as a mechanical compass when rotation is Surface.ROTATION_90
-        SensorManager.remapCoordinateSystem(rotationMatrix, AXIS_Y, AXIS_MINUS_X, transformedRotationMatrix);
+        sensorManager.remapCoordinateSystem(rotationMatrix, AXIS_Y, AXIS_MINUS_X, transformedRotationMatrix);
          */
 
-        SensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
+        sensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
         float pitch = orientationValues[1];
         float roll = orientationValues[2];
 
