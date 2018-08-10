@@ -84,9 +84,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
-        //TODO may need to transform
+        /*
+        TODO may need to transform
+        //https://developer.android.com/reference/android/hardware/SensorManager.html#remapCoordinateSystem(float[],%20int,%20int,%20float[])
+        float[] transformedRotationMatrix = new float[9];
+        //eg Using the device as a mechanical compass when rotation is Surface.ROTATION_90
+        SensorManager.remapCoordinateSystem(rotationMatrix, AXIS_Y, AXIS_MINUS_X, transformedRotationMatrix);
+         */
 
-        SensorManager.getOrientation(rotationMatrix, orientationValues);
+        SensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
         float pitch = orientationValues[1];
         float roll = orientationValues[2];
 
