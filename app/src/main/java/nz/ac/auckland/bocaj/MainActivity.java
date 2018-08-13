@@ -1,18 +1,16 @@
 package nz.ac.auckland.bocaj;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.Display;
-import android.view.View;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
     private int x;
@@ -31,23 +29,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] geomagnetic = new float[3];
     private float[] orientationValues = new float[3];
 
-    private SensorManager sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+    private SensorManager sensorManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+        // Lock the orientation to portrait (for now)
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
         initialiseCalibration();
     }
@@ -88,7 +79,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStop() {
         super.onStop();
-
         sensorManager.unregisterListener(this);
     }
 
@@ -120,6 +110,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         float dpitch = pitch - pitchOffset;
         float droll = roll - rollOffset;
+
+        TextView textView = findViewById(R.id.value_format);
+        textView.setText("raw pitch: " + pitch + ", dpitch: " + dpitch + ", raw roll: " + roll + ", droll: " + droll);
 
         mapToPointer(dpitch, droll);
     }
