@@ -13,6 +13,14 @@ import android.view.Display;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    private TextView textView;
+    private String centre;
+    private String radPitchRoll;
+    private String degPitchRoll;
+    private String coordinates;
+    private String textToDisplay;
+
+    //pixel coordinates
     private int x;
     private int y;
 
@@ -23,6 +31,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //depends on calibrated pitch and roll
     private float pitchOffset;
     private float rollOffset;
+
+    //multiplier (z height) for mapping pitch/roll to up/right
+    private int pitchMultiplier;
+    private int rollMultiplier;
 
     private float[] rotationMatrix = new float[9];
     private float[] gravity = new float[3];
@@ -44,16 +56,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void initialiseCalibration() {
-        Display mdisp = getWindowManager().getDefaultDisplay();
-        Point mdispSize = new Point();
-        mdisp.getSize(mdispSize);
-        int maxX = mdispSize.x;
-        int maxY = mdispSize.y;
+        Display display = getWindowManager().getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+        int maxX = displaySize.x;
+        int maxY = displaySize.y;
         xCentre = maxX / 2;
         yCentre = maxY / 2;
+        centre = "Centre: (" + xCentre + ", " + yCentre + ")";
 
         pitchOffset = 0;
         rollOffset = 0;
+
+        // 45 degree rotation should take pointer to the edge
+        pitchMultiplier = maxY / 2;
+        rollMultiplier = maxX / 2;
     }
 
     /**
@@ -111,19 +128,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float dpitch = pitch - pitchOffset;
         float droll = roll - rollOffset;
 
-        TextView textView = findViewById(R.id.value_format);
-        textView.setText("raw pitch: " + pitch + ", dpitch: " + dpitch + ", raw roll: " + roll + ", droll: " + droll);
+        radPitchRoll = "RAD: raw pitch: " + pitch + ", dpitch: " + dpitch + ", raw roll: " + roll + ", droll: " + droll;
 
         mapToPointer(dpitch, droll);
+
+        displayText();
     }
 
-    private void mapToPointer(float dpitch, float droll) {
-        //TODO magic maths happens here
-        int dy = (int) dpitch;
-        int dx = (int) droll;
+    private void mapToPointer(float dpitchRad, float drollRad) {
+        double dpitchDeg = Math.toDegrees(dpitchRad);
+        double drollDeg = Math.toDegrees(drollRad);
 
-        x = xCentre + dx;
+        int dy = (int) (Math.tan(dpitchDeg) * pitchMultiplier);
+        int dx = (int) (Math.tan(drollDeg) * rollMultiplier);
+
+        degPitchRoll = "dpitch: " + dpitchDeg + "deg, dy: " + dy + "px, droll: " + drollDeg + "deg, dx: " + "px";
+
         y = yCentre + dy;
+        x = xCentre + dx;
+
+        coordinates = "Point: (" + x + ", " + y + ")";
+    }
+
+    private void displayText() {
+        textView = findViewById(R.id.value_format);
+        textToDisplay = centre + "\n"
+                + radPitchRoll + "\n"
+                + degPitchRoll + "\n"
+                + coordinates;
+        textView.setText(textToDisplay);
     }
 
     public Point getClickCoordinates() {
