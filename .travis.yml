@@ -1,6 +1,14 @@
 language: android
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
 before_install:
-- yes | sdkmanager "platforms;android-27"
+- yes | sdkmanager "platforms;android-28"
 script:
 - chmod +x ./gradlew
 android:
@@ -11,7 +19,7 @@ android:
     # - platform-tools
 
     # The BuildTools version used by your project
-    - build-tools-27.0.3
+    - build-tools-28.0.2
 
     # The SDK version used to compile your project
     - android-24
@@ -24,4 +32,4 @@ android:
 
     # Specify at least one system image,
     # if you need to run emulator(s) during your tests
-    - sys-img-armeabi-v7a-android-24
+#    - sys-img-armeabi-v7a-android-24
