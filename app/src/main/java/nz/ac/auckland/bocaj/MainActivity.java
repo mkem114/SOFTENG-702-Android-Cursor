@@ -36,10 +36,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final int CURSOR_HEIGHT = 120;
 
     //pixel coordinates
+    private float pitch;
+    private float roll;
     private int x;
     private int y;
-    int dy = 0;
-    int dx = 0;
+    private int dy = 0;
+    private int dx = 0;
 
     //depends on display size
     private int maxX;
@@ -91,7 +93,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return true;
         });
 
-        initialiseCalibration();
+        initialise();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_GAME);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        sensorManager.unregisterListener(this);
     }
 
     @Override
@@ -100,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) volumeUp = true;
             else volumeDown = true;
             if (volumeDown && volumeUp) {
-                initialiseCalibration();
+                calibrate();
             }
             long downTime = SystemClock.uptimeMillis();
             long eventTime = SystemClock.uptimeMillis();
@@ -126,7 +146,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return false;
     }
 
-    private void initialiseCalibration() {
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        //unused. Do nothing
+    }
+
+    private void initialise() {
         Display display = getWindowManager().getDefaultDisplay();
         Point displaySize = new Point();
         display.getSize(displaySize);
@@ -138,37 +163,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         x = xCentre;
         y = yCentre;
 
-        pitchOffset = 0;
-        rollOffset = 0;
-
         pitchMultiplier = maxY;
         rollMultiplier = maxX;
+
+        pitchOffset = 0;
+        rollOffset = 0;
     }
 
-    /**
-     * TODO later: updates offset if dwell for 5 seconds
-     */
-    private void recalibrate() {
-        pitchOffset = 0; //pitch from sensor
-        rollOffset = 0; //roll from sensor
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_GAME);
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-                SensorManager.SENSOR_DELAY_GAME);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        sensorManager.unregisterListener(this);
+    private void calibrate() {
+        pitchOffset = pitch;
+        rollOffset = roll;
     }
 
     @Override
@@ -185,39 +189,39 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         sensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
-        /*
-        TODO may need to transform
-        //https://developer.android.com/reference/android/hardware/SensorManager.html#remapCoordinateSystem(float[],%20int,%20int,%20float[])
-        float[] transformedRotationMatrix = new float[9];
-        //eg Using the device as a mechanical compass when rotation is Surface.ROTATION_90
-        sensorManager.remapCoordinateSystem(rotationMatrix, AXIS_Y, AXIS_MINUS_X, transformedRotationMatrix);
-         */
-
         sensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
-        float pitch = orientationValues[1];
-        float roll = orientationValues[2];
+        pitch = orientationValues[1];
+        roll = orientationValues[2];
 
         pitch = Math.round(pitch * 100) / (100f);
         roll = Math.round(roll * 100) / (100f);
-//
-//        float dpitch = pitch - pitchOffset;
-//        float droll = roll - rollOffset;
+        float dpitch = pitch - pitchOffset;
+        float droll = roll - rollOffset;
 
-//        radPitchRoll = "RAD: raw pitch: " + pitch + ", dpitch: " + dpitch + ", raw roll: " + roll + ", droll: " + droll;
         radPitchRoll = "RAD: raw pitch: " + pitch + ", raw roll: " + roll;
 
-//        mapToPointer(dpitch, droll);
-        mapToPointer(pitch, roll);
+        mapToPointer(dpitch, droll);
 
         displayText();
     }
 
-    private void mapToPointer(float pitch, float roll) {
+    private float[] lowPass(float[] input, float[] previousOutput) {
+        if (previousOutput == null) {
+            return input;
+        }
 
-        double pitchDeg = Math.toDegrees(pitch);
-        double rollDeg = Math.toDegrees(roll);
+        for (int i = 0; i < input.length; i++) {
+            previousOutput[i] = previousOutput[i] + 0.1f * (input[i] - previousOutput[i]);
+        }
 
-        int tempdy = (int) (Math.tan(pitch) * pitchMultiplier);
+        return previousOutput;
+    }
+
+    private void mapToPointer(float dpitch, float droll) {
+        double pitchDeg = Math.toDegrees(dpitch);
+        double rollDeg = Math.toDegrees(droll);
+
+        int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
         if (Math.abs(dy - tempdy) > 15) {
             dy = tempdy;
             y = yCentre - dy;
@@ -225,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             y = y < 0 ? 0 : y;
         }
 
-        int tempdx = (int) (Math.tan(roll) * rollMultiplier);
+        int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         if (Math.abs(dx - tempdx) > 15) {
             dx = tempdx;
             x = xCentre + dx;
@@ -236,7 +240,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         degPitchRoll = "dpitch: " + (int) pitchDeg + "deg, dy: " + dy + "px, droll: " + (int) rollDeg + "deg, dx: " + dx + "px";
         coordinates = "Point: (" + x + ", " + y + ")";
 
-//        cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
         Rect bounds = cursor.copyBounds();
         bounds.left = x;
         bounds.top = y;
@@ -245,21 +248,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         cursor.setBounds(bounds);
         findViewById(android.R.id.content).invalidate();
     }
-
-//    private void mapToPointer(float dpitchRad, float drollRad) {
-//        double dpitchDeg = Math.toDegrees(dpitchRad);
-//        double drollDeg = Math.toDegrees(drollRad);
-//
-//        int dy = (int) (Math.tan(dpitchDeg) * pitchMultiplier);
-//        int dx = (int) (Math.tan(drollDeg) * rollMultiplier);
-//
-//        degPitchRoll = "dpitch: " + dpitchDeg + "deg, dy: " + dy + "px, droll: " + drollDeg + "deg, dx: " + "px";
-//
-//        y = yCentre + dy;
-//        x = xCentre + dx;
-//
-//        coordinates = "Point: (" + x + ", " + y + ")";
-//    }
 
     private void displayText() {
         textView = findViewById(R.id.value_format);
@@ -272,24 +260,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public Point getClickCoordinates() {
         return new Point(x, y);
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        //unused. Do nothing
-    }
-
-    /**
-     * Magical low pass filter with alpha 0.25f
-     * @param input input values
-     * @param previousOutput previous output values
-     * @return smooth af filtered values
-     */
-    private float[] lowPass(float[] input, float[] previousOutput) {
-        if (previousOutput == null) return input;
-        for (int i = 0; i < input.length; i++) {
-            previousOutput[i] = previousOutput[i] + 0.1f*(input[i] - previousOutput[i]);
-        }
-        return previousOutput;
     }
 }
