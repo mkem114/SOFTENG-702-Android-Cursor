@@ -14,6 +14,7 @@ import android.os.SystemClock;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -22,9 +23,15 @@ import java.util.Objects;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
+    private static final float STANDARD_SCREEN_WIDTH = 720;
+    private static final int STANDARD_CURSOR_HEIGHT = 60;
+    private static final int STANDARD_CURSOR_WIDTH = 70;
+
+    private int cursorHeight = STANDARD_CURSOR_HEIGHT;
+    private int cursorWidth = STANDARD_CURSOR_WIDTH;
     private Drawable cursor;
-    private static final int CURSOR_WIDTH = 140;
-    private static final int CURSOR_HEIGHT = 120;
+
+    private float screenSizeFactor;
 
     //pixel coordinates
     private float pitch;
@@ -69,8 +76,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         cursor = Objects.requireNonNull(ContextCompat.
                 getDrawable(getBaseContext(), R.drawable.cursor));
-        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + CURSOR_WIDTH,
-                yCentre + CURSOR_HEIGHT));
+        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + cursorWidth,
+                yCentre + cursorHeight));
 
         findViewById(android.R.id.content).getOverlay().add(cursor);
 
@@ -88,6 +95,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     protected void onStart() {
         super.onStart();
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
+        cursorHeight = (int) (screenSizeFactor * STANDARD_CURSOR_HEIGHT);
+        cursorWidth = (int) (screenSizeFactor * STANDARD_CURSOR_WIDTH);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -205,8 +218,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void mapToPointer(float dpitch, float droll) {
+
+        int minPixelChange = (int) (10 * screenSizeFactor);
         int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
-        if (Math.abs(dy - tempdy) > 15) {
+        if (Math.abs(dy - tempdy) > minPixelChange) {
             dy = tempdy;
             y = yCentre - dy;
             y = y > maxY ? maxY : y;
@@ -214,7 +229,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         int tempdx = (int) (Math.tan(droll) * rollMultiplier);
-        if (Math.abs(dx - tempdx) > 15) {
+        if (Math.abs(dx - tempdx) > minPixelChange) {
             dx = tempdx;
             x = xCentre + dx;
             x = x > maxX ? maxX : x;
@@ -224,8 +239,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Rect bounds = cursor.copyBounds();
         bounds.left = x;
         bounds.top = y;
-        bounds.right = x + CURSOR_WIDTH;
-        bounds.bottom = y + CURSOR_HEIGHT;
+        bounds.right = x + cursorWidth;
+        bounds.bottom = y + cursorHeight;
         cursor.setBounds(bounds);
         findViewById(android.R.id.content).invalidate();
     }
