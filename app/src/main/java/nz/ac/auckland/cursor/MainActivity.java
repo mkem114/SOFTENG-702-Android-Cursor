@@ -3,12 +3,12 @@ package nz.ac.auckland.cursor;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.design.widget.Snackbar;
@@ -19,6 +19,8 @@ import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 import java.util.Objects;
 
 
@@ -33,11 +35,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float screenSizeFactor;
 
-    //pixel coordinates
     private float pitch;
     private float roll;
+
     private int x;
     private int y;
+    private int[] xArr = new int[30];
+    private int[] yArr = new int[30];
+    private static final int DWELL_THRESHOLD = 100;
     private int dy = 0;
     private int dx = 0;
 
@@ -173,8 +178,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xCentre = maxX / 2;
         yCentre = maxY / 2;
 
-        x = xCentre;
-        y = yCentre;
+        Arrays.fill(xArr, xCentre);
+        Arrays.fill(yArr, yCentre);
 
         pitchMultiplier = maxY * 2;
         rollMultiplier = maxX * 2;
@@ -227,20 +232,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void mapToPointer(float dpitch, float droll) {
-
-        int minPixelChange = (int) (10 * screenSizeFactor);
+        int minPixelChange = 1;
+        int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
+
+        if (isDwell(xCentre + tempdx, yCentre - tempdy)) {
+            return;
+        }
+
+        System.out.println("Moved");
+
         if (Math.abs(dy - tempdy) > minPixelChange) {
             dy = tempdy;
-            y = yCentre - dy;
+            y = yArr[0];
             y = y > maxY ? maxY : y;
             y = y < 0 ? 0 : y;
         }
 
-        int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         if (Math.abs(dx - tempdx) > minPixelChange) {
             dx = tempdx;
-            x = xCentre + dx;
+            x = xArr[0];
             x = x > maxX ? maxX : x;
             x = x < 0 ? 0 : x;
         }
@@ -252,5 +263,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         bounds.bottom = y + cursorHeight;
         cursor.setBounds(bounds);
         findViewById(android.R.id.content).invalidate();
+    }
+
+    private boolean isDwell(int newX, int newY) {
+        for (int i = xArr.length - 1; i > 0; i--) {
+            xArr[i] = xArr[i - 1];
+            yArr[i] = yArr[i - 1];
+        }
+
+        xArr[0] = newX;
+        yArr[0] = newY;
+
+        IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
+        int diffX = statX.getMax() - statX.getMin();
+
+        IntSummaryStatistics statY = Arrays.stream(yArr).summaryStatistics();
+        int diffY = statY.getMax() - statY.getMin();
+
+        if (diffX < DWELL_THRESHOLD && diffY < DWELL_THRESHOLD) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
