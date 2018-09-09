@@ -11,26 +11,17 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.SystemClock;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.widget.TextView;
 
 import java.util.Objects;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
-    private TextView textView;
-    private String centre;
-    private String radPitchRoll;
-    private String degPitchRoll = "";
-    private String coordinates;
-    private String textToDisplay;
-
     private Drawable cursor;
     private static final int CURSOR_WIDTH = 140;
     private static final int CURSOR_HEIGHT = 120;
@@ -76,18 +67,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        final double x = fab.getX();
-        final double y = fab.getY();
-
-        cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
-        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + CURSOR_WIDTH, yCentre + CURSOR_HEIGHT));
+        cursor = Objects.requireNonNull(ContextCompat.
+                getDrawable(getBaseContext(), R.drawable.cursor));
+        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + CURSOR_WIDTH,
+                yCentre + CURSOR_HEIGHT));
 
         findViewById(android.R.id.content).getOverlay().add(cursor);
 
         findViewById(android.R.id.content).setOnTouchListener((view, event) -> {
-            Snackbar.make(view, "Click detected at " + event.getX() + "," + event.getY(), Snackbar.LENGTH_SHORT)
+            Snackbar.make(view, "Click detected at " + event.getX() + "," + event.getY(),
+                    Snackbar.LENGTH_SHORT)
                     .setAction("Action", null).show();
             view.performClick();
             return true;
@@ -125,8 +114,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             long downTime = SystemClock.uptimeMillis();
             long eventTime = SystemClock.uptimeMillis();
 
-            MotionEvent downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, (int)x, (int)y, 0);
-            MotionEvent upEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, (int)x, (int)y, 0);
+            MotionEvent downEvent = MotionEvent.
+                    obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
+            MotionEvent upEvent = MotionEvent
+                    .obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
             findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
             findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
             downEvent.recycle();
@@ -159,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         maxY = displaySize.y;
         xCentre = maxX / 2;
         yCentre = maxY / 2;
-        centre = "Centre: (" + xCentre + ", " + yCentre + ")";
+
         x = xCentre;
         y = yCentre;
 
@@ -188,8 +179,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 return;
         }
 
-        sensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
-        sensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
+        SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
+        SensorManager.getOrientation(rotationMatrix, orientationValues);
         pitch = orientationValues[1];
         roll = orientationValues[2];
 
@@ -198,11 +189,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         float dpitch = pitch - pitchOffset;
         float droll = roll - rollOffset;
 
-        radPitchRoll = "RAD: raw pitch: " + pitch + ", raw roll: " + roll;
-
         mapToPointer(dpitch, droll);
-
-        displayText();
     }
 
     private float[] lowPass(float[] input, float[] previousOutput) {
@@ -218,9 +205,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void mapToPointer(float dpitch, float droll) {
-        double pitchDeg = Math.toDegrees(dpitch);
-        double rollDeg = Math.toDegrees(droll);
-
         int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
         if (Math.abs(dy - tempdy) > 15) {
             dy = tempdy;
@@ -237,9 +221,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             x = x < 0 ? 0 : x;
         }
 
-        degPitchRoll = "dpitch: " + (int) pitchDeg + "deg, dy: " + dy + "px, droll: " + (int) rollDeg + "deg, dx: " + dx + "px";
-        coordinates = "Point: (" + x + ", " + y + ")";
-
         Rect bounds = cursor.copyBounds();
         bounds.left = x;
         bounds.top = y;
@@ -247,18 +228,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         bounds.bottom = y + CURSOR_HEIGHT;
         cursor.setBounds(bounds);
         findViewById(android.R.id.content).invalidate();
-    }
-
-    private void displayText() {
-        textView = findViewById(R.id.value_format);
-        textToDisplay = centre + "\n"
-                + radPitchRoll + "\n"
-                + degPitchRoll + "\n"
-                + coordinates;
-        textView.setText(textToDisplay);
-    }
-
-    public Point getClickCoordinates() {
-        return new Point(x, y);
     }
 }
