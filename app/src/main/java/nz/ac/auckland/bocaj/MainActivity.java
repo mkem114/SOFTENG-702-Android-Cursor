@@ -49,8 +49,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float rollOffset;
 
     //multiplier (z height) for mapping pitch/roll to up/right
-    private int pitchMultiplier;
-    private int rollMultiplier;
+    private double pitchMultiplier;
+    private double rollMultiplier;
 
     private float[] rotationMatrix = new float[9];
     private float[] gravity = new float[3];
@@ -115,8 +115,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         rollOffset = 0;
 
         // 30 degree rotation should take pointer to the edge
-        pitchMultiplier = maxY / 3;
-        rollMultiplier = maxX / 3;
+        pitchMultiplier = maxY * Math.sqrt(3) / 4;
+        rollMultiplier = maxX * Math.sqrt(3) / 4;
     }
 
     /**
@@ -170,6 +170,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
         float pitch = orientationValues[1];
         float roll = orientationValues[2];
+
+        pitch = Math.round(pitch * 100) / (100f);
+        roll = Math.round(roll * 100) / (100f);
 //
 //        float dpitch = pitch - pitchOffset;
 //        float droll = roll - rollOffset;
@@ -189,15 +192,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         double pitchDeg = Math.toDegrees(pitch);
         double rollDeg = Math.toDegrees(roll);
 
-        if (Math.abs(pitchDeg) > 5) {
-            dy = (int) (Math.tan(pitch) * pitchMultiplier);
+        dy = (int) (Math.tan(pitch) * pitchMultiplier);
+        if (Math.abs(dy) > 10) {
             y = yCentre - dy;
             y = y > maxY ? maxY : y;
             y = y < 0 ? 0 : y;
         }
 
-        if (Math.abs(rollDeg) > 5) {
-            dx = (int) (Math.tan(roll) * rollMultiplier);
+        dx = (int) (Math.tan(roll) * rollMultiplier);
+        if (Math.abs(dx) > 10) {
             x = xCentre + dx;
             x = x > maxX ? maxX : x;
             x = x < 0 ? 0 : x;
