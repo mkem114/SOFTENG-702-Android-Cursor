@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.widget.TextView;
+
 import java.util.Objects;
 
 
