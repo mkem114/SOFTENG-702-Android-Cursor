@@ -16,6 +16,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Display;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
@@ -72,17 +73,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         final double x = fab.getX();
         final double y = fab.getY();
-        fab.setOnClickListener(view -> {
-            long downTime = SystemClock.uptimeMillis();
-            long eventTime = SystemClock.uptimeMillis();
-
-            MotionEvent downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, 150, 900, 0);
-            MotionEvent upEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, 150, 900, 0);
-            findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
-            findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
-            downEvent.recycle();
-            upEvent.recycle();
-        });
 
         cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
         cursor.setBounds(new Rect(xCentre, yCentre, xCentre + CURSOR_WIDTH, yCentre + CURSOR_HEIGHT));
@@ -97,6 +87,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
         initialiseCalibration();
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            long downTime = SystemClock.uptimeMillis();
+            long eventTime = SystemClock.uptimeMillis();
+
+            MotionEvent downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, (int)x, (int)y, 0);
+            MotionEvent upEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, (int)x, (int)y, 0);
+            findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
+            findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
+            downEvent.recycle();
+            upEvent.recycle();
+            return true;
+        }
+        return false;
     }
 
     private void initialiseCalibration() {
