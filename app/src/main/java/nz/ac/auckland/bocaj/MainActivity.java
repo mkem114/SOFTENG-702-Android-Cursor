@@ -149,10 +149,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void onSensorChanged(SensorEvent event) {
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
-                gravity = event.values.clone();
+                gravity = lowPass(event.values.clone(), gravity);
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
-                geomagnetic = event.values.clone();
+                geomagnetic = lowPass(event.values.clone(), geomagnetic);
                 break;
             default:
                 return;
@@ -245,5 +245,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         //unused. Do nothing
+    }
+
+    /**
+     * Magical low pass filter with alpha 0.25f
+     * @param input input values
+     * @param previousOutput previous output values
+     * @return smooth af filtered values
+     */
+    private float[] lowPass(float[] input, float[] previousOutput) {
+        if (previousOutput == null) return input;
+        for (int i = 0; i < input.length; i++) {
+            previousOutput[i] = previousOutput[i] + 0.1f*(input[i] - previousOutput[i]);
+        }
+        return previousOutput;
     }
 }
