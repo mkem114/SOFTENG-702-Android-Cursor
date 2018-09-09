@@ -1,4 +1,4 @@
-package nz.ac.auckland.bocaj;
+package nz.ac.auckland.cursor;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("nz.ac.auckland.bocaj", appContext.getPackageName());
+        assertEquals("nz.ac.auckland.cursor", appContext.getPackageName());
     }
 }

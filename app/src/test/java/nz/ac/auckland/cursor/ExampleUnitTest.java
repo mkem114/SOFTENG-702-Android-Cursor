@@ -1,4 +1,4 @@
-package nz.ac.auckland.bocaj;
+package nz.ac.auckland.cursor;
 
 import org.junit.Test;
 
