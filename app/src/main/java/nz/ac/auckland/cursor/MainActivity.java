@@ -118,12 +118,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) volumeUp = true;
-            else volumeDown = true;
-            if (volumeDown && volumeUp) {
-                calibrate();
-            }
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            volumeUp = true;
+            calibrate();
+            return true;
+        }
+
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            volumeDown = true;
+
             long downTime = SystemClock.uptimeMillis();
             long eventTime = SystemClock.uptimeMillis();
 
@@ -137,16 +140,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             upEvent.recycle();
             return true;
         }
+
         return false;
     }
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent keyEvent) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) volumeUp = false;
-            else volumeDown = false;
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            volumeUp = false;
             return true;
         }
+
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            volumeDown = false;
+            return true;
+        }
+
         return false;
     }
 
