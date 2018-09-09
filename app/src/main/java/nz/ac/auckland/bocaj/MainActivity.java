@@ -60,6 +60,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private float[] geomagnetic = new float[3];
     private float[] orientationValues = new float[3];
 
+    private boolean volumeDown = false;
+    private boolean volumeUp = false;
+
     private SensorManager sensorManager;
 
     @Override
@@ -94,6 +97,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) volumeUp = true;
+            else volumeDown = true;
+            if (volumeDown && volumeUp) {
+                initialiseCalibration();
+            }
             long downTime = SystemClock.uptimeMillis();
             long eventTime = SystemClock.uptimeMillis();
 
@@ -103,6 +111,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
             downEvent.recycle();
             upEvent.recycle();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent keyEvent) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) volumeUp = false;
+            else volumeDown = false;
             return true;
         }
         return false;
