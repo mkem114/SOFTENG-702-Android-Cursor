@@ -30,6 +30,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private String coordinates;
     private String textToDisplay;
 
+    private Drawable cursor;
+    private static final int CURSOR_WIDTH = 140;
+    private static final int CURSOR_HEIGHT = 120;
+
     //pixel coordinates
     private int x;
     private int y;
@@ -80,8 +84,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             upEvent.recycle();
         });
 
-        Drawable cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
-        cursor.setBounds(new Rect(-40, -20, 100, 100));
+        cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
+        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + CURSOR_WIDTH, yCentre + CURSOR_HEIGHT));
 
         findViewById(android.R.id.content).getOverlay().add(cursor);
 
@@ -110,9 +114,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         pitchOffset = 0;
         rollOffset = 0;
 
-        // 45 degree rotation should take pointer to the edge
-        pitchMultiplier = maxY / 2;
-        rollMultiplier = maxX / 2;
+        // 30 degree rotation should take pointer to the edge
+        pitchMultiplier = maxY / 3;
+        rollMultiplier = maxX / 3;
     }
 
     /**
@@ -187,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         if (Math.abs(pitchDeg) > 5) {
             dy = (int) (Math.tan(pitch) * pitchMultiplier);
-            y = yCentre + dy;
+            y = yCentre - dy;
             y = y > maxY ? maxY : y;
             y = y < 0 ? 0 : y;
         }
@@ -201,6 +205,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         degPitchRoll = "dpitch: " + (int) pitchDeg + "deg, dy: " + dy + "px, droll: " + (int) rollDeg + "deg, dx: " + dx + "px";
         coordinates = "Point: (" + x + ", " + y + ")";
+
+//        cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
+        cursor.setBounds(new Rect(x, y, x + CURSOR_WIDTH, y + CURSOR_HEIGHT));
+//        findViewById(android.R.id.content).getOverlay().add(cursor);
     }
 
 //    private void mapToPointer(float dpitchRad, float drollRad) {
