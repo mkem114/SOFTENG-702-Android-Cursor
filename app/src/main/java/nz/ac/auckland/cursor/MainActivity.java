@@ -167,8 +167,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         x = xCentre;
         y = yCentre;
 
-        pitchMultiplier = maxY;
-        rollMultiplier = maxX;
+        pitchMultiplier = maxY * 2;
+        rollMultiplier = maxX * 2;
 
         pitchOffset = 0;
         rollOffset = 0;
