@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     //pixel coordinates
     private int x;
     private int y;
+    int dy = 0;
+    int dx = 0;
 
     //depends on display size
     private int maxX;
@@ -121,9 +123,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         pitchOffset = 0;
         rollOffset = 0;
 
-        // 30 degree rotation should take pointer to the edge
-        pitchMultiplier = maxY * Math.sqrt(3) / 4;
-        rollMultiplier = maxX * Math.sqrt(3) / 4;
+        pitchMultiplier = maxY;
+        rollMultiplier = maxX;
     }
 
     /**
@@ -140,10 +141,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_NORMAL);
+                SensorManager.SENSOR_DELAY_GAME);
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-                SensorManager.SENSOR_DELAY_NORMAL);
+                SensorManager.SENSOR_DELAY_GAME);
     }
 
     @Override
@@ -194,20 +195,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void mapToPointer(float pitch, float roll) {
-        int dy = 0;
-        int dx = 0;
+
         double pitchDeg = Math.toDegrees(pitch);
         double rollDeg = Math.toDegrees(roll);
 
-        dy = (int) (Math.tan(pitch) * pitchMultiplier);
-        if (Math.abs(dy) > 10) {
+        int tempdy = (int) (Math.tan(pitch) * pitchMultiplier);
+        if (Math.abs(dy - tempdy) > 15) {
+            dy = tempdy;
             y = yCentre - dy;
             y = y > maxY ? maxY : y;
             y = y < 0 ? 0 : y;
         }
 
-        dx = (int) (Math.tan(roll) * rollMultiplier);
-        if (Math.abs(dx) > 10) {
+        int tempdx = (int) (Math.tan(roll) * rollMultiplier);
+        if (Math.abs(dx - tempdx) > 15) {
+            dx = tempdx;
             x = xCentre + dx;
             x = x > maxX ? maxX : x;
             x = x < 0 ? 0 : x;
@@ -217,8 +219,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         coordinates = "Point: (" + x + ", " + y + ")";
 
 //        cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
-        cursor.setBounds(new Rect(x, y, x + CURSOR_WIDTH, y + CURSOR_HEIGHT));
-//        findViewById(android.R.id.content).getOverlay().add(cursor);
+        Rect bounds = cursor.copyBounds();
+        bounds.left = x;
+        bounds.top = y;
+        bounds.right = x + CURSOR_WIDTH;
+        bounds.bottom = y + CURSOR_HEIGHT;
+        cursor.setBounds(bounds);
+        findViewById(android.R.id.content).invalidate();
     }
 
 //    private void mapToPointer(float dpitchRad, float drollRad) {
