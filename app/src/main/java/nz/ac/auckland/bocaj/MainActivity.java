@@ -16,7 +16,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView textView;
     private String centre;
     private String radPitchRoll;
-    private String degPitchRoll;
+    private String degPitchRoll = "";
     private String coordinates;
     private String textToDisplay;
 
@@ -25,6 +25,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int y;
 
     //depends on display size
+    private int maxX;
+    private int maxY;
     private int xCentre;
     private int yCentre;
 
@@ -59,11 +61,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         Display display = getWindowManager().getDefaultDisplay();
         Point displaySize = new Point();
         display.getSize(displaySize);
-        int maxX = displaySize.x;
-        int maxY = displaySize.y;
+        maxX = displaySize.x;
+        maxY = displaySize.y;
         xCentre = maxX / 2;
         yCentre = maxY / 2;
         centre = "Centre: (" + xCentre + ", " + yCentre + ")";
+        x = xCentre;
+        y = yCentre;
 
         pitchOffset = 0;
         rollOffset = 0;
@@ -124,31 +128,57 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.getOrientation(rotationMatrix, orientationValues); //use transformedRotationMatrix
         float pitch = orientationValues[1];
         float roll = orientationValues[2];
+//
+//        float dpitch = pitch - pitchOffset;
+//        float droll = roll - rollOffset;
 
-        float dpitch = pitch - pitchOffset;
-        float droll = roll - rollOffset;
+//        radPitchRoll = "RAD: raw pitch: " + pitch + ", dpitch: " + dpitch + ", raw roll: " + roll + ", droll: " + droll;
+        radPitchRoll = "RAD: raw pitch: " + pitch + ", raw roll: " + roll;
 
-        radPitchRoll = "RAD: raw pitch: " + pitch + ", dpitch: " + dpitch + ", raw roll: " + roll + ", droll: " + droll;
-
-        mapToPointer(dpitch, droll);
+//        mapToPointer(dpitch, droll);
+        mapToPointer(pitch, roll);
 
         displayText();
     }
 
-    private void mapToPointer(float dpitchRad, float drollRad) {
-        double dpitchDeg = Math.toDegrees(dpitchRad);
-        double drollDeg = Math.toDegrees(drollRad);
+    private void mapToPointer(float pitch, float roll) {
+        int dy = 0;
+        int dx = 0;
+        double pitchDeg = Math.toDegrees(pitch);
+        double rollDeg = Math.toDegrees(roll);
 
-        int dy = (int) (Math.tan(dpitchDeg) * pitchMultiplier);
-        int dx = (int) (Math.tan(drollDeg) * rollMultiplier);
+        if (Math.abs(pitchDeg) > 5) {
+            dy = (int) (Math.tan(pitch) * pitchMultiplier);
+            y = yCentre + dy;
+            y = y > maxY ? maxY : y;
+            y = y < 0 ? 0 : y;
+        }
 
-        degPitchRoll = "dpitch: " + dpitchDeg + "deg, dy: " + dy + "px, droll: " + drollDeg + "deg, dx: " + "px";
+        if (Math.abs(rollDeg) > 5) {
+            dx = (int) (Math.tan(roll) * rollMultiplier);
+            x = xCentre + dx;
+            x = x > maxX ? maxX : x;
+            x = x < 0 ? 0 : x;
+        }
 
-        y = yCentre + dy;
-        x = xCentre + dx;
-
+        degPitchRoll = "dpitch: " + (int) pitchDeg + "deg, dy: " + dy + "px, droll: " + (int) rollDeg + "deg, dx: " + dx + "px";
         coordinates = "Point: (" + x + ", " + y + ")";
     }
+
+//    private void mapToPointer(float dpitchRad, float drollRad) {
+//        double dpitchDeg = Math.toDegrees(dpitchRad);
+//        double drollDeg = Math.toDegrees(drollRad);
+//
+//        int dy = (int) (Math.tan(dpitchDeg) * pitchMultiplier);
+//        int dx = (int) (Math.tan(drollDeg) * rollMultiplier);
+//
+//        degPitchRoll = "dpitch: " + dpitchDeg + "deg, dy: " + dy + "px, droll: " + drollDeg + "deg, dx: " + "px";
+//
+//        y = yCentre + dy;
+//        x = xCentre + dx;
+//
+//        coordinates = "Point: (" + x + ", " + y + ")";
+//    }
 
     private void displayText() {
         textView = findViewById(R.id.value_format);
