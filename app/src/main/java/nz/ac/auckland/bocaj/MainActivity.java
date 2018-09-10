@@ -1,7 +1,12 @@
 package nz.ac.auckland.bocaj;
 
+import android.accessibilityservice.GestureDescription;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
+import android.graphics.Path;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -9,8 +14,14 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.os.SystemClock;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
@@ -63,6 +74,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean volumeDown = false;
     private boolean volumeUp = false;
 
+    Messenger messenger = null;
+    boolean mBound = false;
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            messenger = new Messenger(service);
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            messenger = null;
+            mBound = false;
+        }
+    };
+
     private SensorManager sensorManager;
 
     @Override
@@ -74,10 +102,24 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
+        // Show alert dialog to the user saying a separate permission is needed
+        // Launch the settings activity if the user prefers
+        Intent myIntent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+        startActivity(myIntent);
+
+//        Intent svc = new Intent(this, OverlayShowingService.class);
+//        startService(svc);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         final double x = fab.getX();
         final double y = fab.getY();
+        fab.setOnClickListener(click -> {
+            try {
+                if (mBound) messenger.send(Message.obtain(null, 0, 0, 0, new Object()));
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        });
 
         cursor = Objects.requireNonNull(ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor));
         cursor.setBounds(new Rect(xCentre, yCentre, xCentre + CURSOR_WIDTH, yCentre + CURSOR_HEIGHT));
@@ -92,6 +134,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
 
         initialiseCalibration();
+
+        if (!mBound) return;
+        try {
+            messenger.send(Message.obtain(null, 1, 200, 200, new Object()));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -99,19 +149,23 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) volumeUp = true;
             else volumeDown = true;
-            if (volumeDown && volumeUp) {
-                initialiseCalibration();
-            }
-            long downTime = SystemClock.uptimeMillis();
-            long eventTime = SystemClock.uptimeMillis();
+//            if (volumeDown && volumeUp) {
+//                initialiseCalibration();
+//            }
+            //long downTime = SystemClock.uptimeMillis();
+            //long eventTime = SystemClock.uptimeMillis();
 
-            MotionEvent downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, (int)x, (int)y, 0);
-            MotionEvent upEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, (int)x, (int)y, 0);
-            findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
-            findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
-            downEvent.recycle();
-            upEvent.recycle();
-            return true;
+            //Path circle = new Path();
+            //GestureDescription gesture = new GestureDescription.Builder()
+            //       .addStroke(new GestureDescription.StrokeDescription(circle, 0, 50)).build();
+
+//            MotionEvent downEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, (int)x, (int)y, 0);
+//            MotionEvent upEvent = MotionEvent.obtain(downTime, eventTime, MotionEvent.ACTION_UP, (int)x, (int)y, 0);
+//            findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
+//            findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
+//            downEvent.recycle();
+//            upEvent.recycle();
+//            return true;
         }
         return false;
     }
@@ -163,12 +217,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
                 SensorManager.SENSOR_DELAY_GAME);
+        bindService(new Intent(this, OverlayShowingService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
         sensorManager.unregisterListener(this);
+        if (mBound) {
+            unbindService(serviceConnection);
+            messenger = null;
+        }
     }
 
     @Override
