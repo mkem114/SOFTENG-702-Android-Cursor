@@ -195,7 +195,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //unused. Do nothing
     }
 
-
     private void calibrate() {
         pitchOffset = pitch;
         rollOffset = roll;
