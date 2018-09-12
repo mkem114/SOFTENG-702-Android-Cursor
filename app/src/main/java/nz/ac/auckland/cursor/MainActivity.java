@@ -35,8 +35,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float screenSizeFactor;
     private int dwellThreshold;
-    private int[] xArr = new int[30];
-    private int[] yArr = new int[30];
+    private int[] xArr = new int[80];
+    private int[] yArr = new int[80];
 
     private float pitch;
     private float roll;
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
         cursorHeight = (int) (screenSizeFactor * STANDARD_CURSOR_HEIGHT);
         cursorWidth = (int) (screenSizeFactor * STANDARD_CURSOR_WIDTH);
-        dwellThreshold = (int) (10 * screenSizeFactor);
+        dwellThreshold = (int) (80 * screenSizeFactor);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -211,8 +211,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         pitch = orientationValues[1];
         roll = orientationValues[2];
 
-//        pitch = pitch * 100) / (100f);
-//        roll = Math.round(roll * 100) / (100f);
         float dpitch = pitch - pitchOffset;
         float droll = roll - rollOffset;
 
@@ -225,14 +223,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         for (int i = 0; i < input.length; i++) {
-            previousOutput[i] = previousOutput[i] + 0.16f * (input[i] - previousOutput[i]);
+            previousOutput[i] = previousOutput[i] + 0.08f * (input[i] - previousOutput[i]);
         }
 
         return previousOutput;
     }
 
     private void mapToPointer(float dpitch, float droll) {
-        int minPixelChange = 1;
+        int minPixelChange = (int) (5 * screenSizeFactor);
         int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
 
