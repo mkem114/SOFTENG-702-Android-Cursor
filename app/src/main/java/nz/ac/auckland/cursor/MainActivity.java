@@ -216,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
         SensorManager.getOrientation(rotationMatrix, orientationValues);
-        // TODO transform for display rotation
+        // TODO transform for display rotation https://google-developer-training.gitbooks.io/android-developer-advanced-course-concepts/unit-1-expand-the-user-experience/lesson-3-sensors/3-2-c-motion-and-position-sensors/3-2-c-motion-and-position-sensors.html
 
         pitch = orientationValues[1];
         roll = orientationValues[2];
