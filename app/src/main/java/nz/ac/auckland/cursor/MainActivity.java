@@ -1,7 +1,6 @@
 package nz.ac.auckland.cursor;
 
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -79,16 +78,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Lock the orientation to portrait (for now)
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
-
-        cursor = Objects.requireNonNull(ContextCompat.
-                getDrawable(getBaseContext(), R.drawable.cursor));
-        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + cursorWidth,
-                yCentre + cursorHeight));
-
-        findViewById(android.R.id.content).getOverlay().add(cursor);
+        initialiseCursor();
+        initialiseCoordinates();
 
         findViewById(android.R.id.content).setOnTouchListener((view, event) -> {
             Snackbar.make(view, "Click detected at " + event.getX() + "," + event.getY(),
@@ -97,8 +88,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             view.performClick();
             return true;
         });
+    }
 
-        initialise();
+    private void initialiseCursor() {
+        cursor = Objects.requireNonNull(ContextCompat.
+                getDrawable(getBaseContext(), R.drawable.cursor));
+        cursor.setBounds(new Rect(xCentre, yCentre, xCentre + cursorWidth,
+                yCentre + cursorHeight));
+
+        findViewById(android.R.id.content).getOverlay().add(cursor);
+    }
+
+    private void initialiseCoordinates() {
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+
+        Display display = getWindowManager().getDefaultDisplay();
+        Point displaySize = new Point();
+        display.getSize(displaySize);
+        maxX = displaySize.x;
+        maxY = displaySize.y;
+        xCentre = maxX / 2;
+        yCentre = maxY / 2;
+
+        Arrays.fill(xArr, xCentre);
+        Arrays.fill(yArr, yCentre);
+        x = xCentre;
+        y = yCentre;
+
+        pitchMultiplier = maxY * 2;
+        rollMultiplier = maxX * 2;
+
+        pitchOffset = 0;
+        rollOffset = 0;
     }
 
     @Override
@@ -110,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
         cursorHeight = (int) (screenSizeFactor * STANDARD_CURSOR_HEIGHT);
         cursorWidth = (int) (screenSizeFactor * STANDARD_CURSOR_WIDTH);
-        dwellThreshold = (int) (DWELL_THRESHOLD_MULTIPLIER * screenSizeFactor);
+        dwellThreshold = (int) (screenSizeFactor * DWELL_THRESHOLD_MULTIPLIER);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -174,24 +195,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         //unused. Do nothing
     }
 
-    private void initialise() {
-        Display display = getWindowManager().getDefaultDisplay();
-        Point displaySize = new Point();
-        display.getSize(displaySize);
-        maxX = displaySize.x;
-        maxY = displaySize.y;
-        xCentre = maxX / 2;
-        yCentre = maxY / 2;
-
-        Arrays.fill(xArr, xCentre);
-        Arrays.fill(yArr, yCentre);
-
-        pitchMultiplier = maxY * 2;
-        rollMultiplier = maxX * 2;
-
-        pitchOffset = 0;
-        rollOffset = 0;
-    }
 
     private void calibrate() {
         pitchOffset = pitch;
@@ -213,6 +216,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
         SensorManager.getOrientation(rotationMatrix, orientationValues);
+        // TODO transform for display rotation
+
         pitch = orientationValues[1];
         roll = orientationValues[2];
 
