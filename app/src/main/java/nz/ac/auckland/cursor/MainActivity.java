@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private float screenSizeFactor;
 
+    //pixel coordinates
     private float pitch;
     private float roll;
 
