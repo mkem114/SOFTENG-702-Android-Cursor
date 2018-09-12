@@ -19,6 +19,8 @@ import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 import java.util.Objects;
 
 
@@ -31,9 +33,16 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int cursorWidth = STANDARD_CURSOR_WIDTH;
     private Drawable cursor;
 
-    private float screenSizeFactor;
+    private static final float CHANGE_SENSITIVITY = 0.08f;
+    private static final int DWELL_WINDOW = 80;
+    private static final int DWELL_THRESHOLD_MULTIPLIER = 80;
+    private static final float MOVEMENT_THRESHOLD_MULTIPLIER = 5;
 
-    //pixel coordinates
+    private float screenSizeFactor;
+    private int dwellThreshold;
+    private int[] xArr = new int[DWELL_WINDOW];
+    private int[] yArr = new int[DWELL_WINDOW];
+
     private float pitch;
     private float roll;
     private int x;
@@ -101,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
         cursorHeight = (int) (screenSizeFactor * STANDARD_CURSOR_HEIGHT);
         cursorWidth = (int) (screenSizeFactor * STANDARD_CURSOR_WIDTH);
+        dwellThreshold = (int) (DWELL_THRESHOLD_MULTIPLIER * screenSizeFactor);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -173,8 +183,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xCentre = maxX / 2;
         yCentre = maxY / 2;
 
-        x = xCentre;
-        y = yCentre;
+        Arrays.fill(xArr, xCentre);
+        Arrays.fill(yArr, yCentre);
 
         pitchMultiplier = maxY * 2;
         rollMultiplier = maxX * 2;
@@ -206,8 +216,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         pitch = orientationValues[1];
         roll = orientationValues[2];
 
-        pitch = Math.round(pitch * 100) / (100f);
-        roll = Math.round(roll * 100) / (100f);
         float dpitch = pitch - pitchOffset;
         float droll = roll - rollOffset;
 
@@ -220,27 +228,32 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         for (int i = 0; i < input.length; i++) {
-            previousOutput[i] = previousOutput[i] + 0.1f * (input[i] - previousOutput[i]);
+            previousOutput[i] = previousOutput[i] + CHANGE_SENSITIVITY * (input[i] - previousOutput[i]);
         }
 
         return previousOutput;
     }
 
     private void mapToPointer(float dpitch, float droll) {
-
-        int minPixelChange = (int) (10 * screenSizeFactor);
+        int minPixelChange = (int) (MOVEMENT_THRESHOLD_MULTIPLIER * screenSizeFactor);
+        int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
+
+        if (isDwell(xCentre + tempdx, yCentre - tempdy)) {
+            return;
+        }
+
+
         if (Math.abs(dy - tempdy) > minPixelChange) {
             dy = tempdy;
-            y = yCentre - dy;
+            y = yArr[0];
             y = y > maxY ? maxY : y;
             y = y < 0 ? 0 : y;
         }
 
-        int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         if (Math.abs(dx - tempdx) > minPixelChange) {
             dx = tempdx;
-            x = xCentre + dx;
+            x = xArr[0];
             x = x > maxX ? maxX : x;
             x = x < 0 ? 0 : x;
         }
@@ -252,5 +265,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         bounds.bottom = y + cursorHeight;
         cursor.setBounds(bounds);
         findViewById(android.R.id.content).invalidate();
+    }
+
+    private boolean isDwell(int newX, int newY) {
+        for (int i = xArr.length - 1; i > 0; i--) {
+            xArr[i] = xArr[i - 1];
+            yArr[i] = yArr[i - 1];
+        }
+
+        xArr[0] = newX;
+        yArr[0] = newY;
+
+        IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
+        int diffX = statX.getMax() - statX.getMin();
+
+        IntSummaryStatistics statY = Arrays.stream(yArr).summaryStatistics();
+        int diffY = statY.getMax() - statY.getMin();
+
+        if (diffX < dwellThreshold && diffY < dwellThreshold) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
