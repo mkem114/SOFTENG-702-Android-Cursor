@@ -33,10 +33,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private int cursorWidth = STANDARD_CURSOR_WIDTH;
     private Drawable cursor;
 
+    private static final float CHANGE_SENSITIVITY = 0.08f;
+    private static final int DWELL_WINDOW = 80;
+    private static final int DWELL_THRESHOLD_MULTIPLIER = 80;
+    private static final float MOVEMENT_THRESHOLD_MULTIPLIER = 5;
+
     private float screenSizeFactor;
     private int dwellThreshold;
-    private int[] xArr = new int[80];
-    private int[] yArr = new int[80];
+    private int[] xArr = new int[DWELL_WINDOW];
+    private int[] yArr = new int[DWELL_WINDOW];
 
     private float pitch;
     private float roll;
@@ -105,7 +110,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
         cursorHeight = (int) (screenSizeFactor * STANDARD_CURSOR_HEIGHT);
         cursorWidth = (int) (screenSizeFactor * STANDARD_CURSOR_WIDTH);
-        dwellThreshold = (int) (80 * screenSizeFactor);
+        dwellThreshold = (int) (DWELL_THRESHOLD_MULTIPLIER * screenSizeFactor);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -223,19 +228,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         for (int i = 0; i < input.length; i++) {
-            previousOutput[i] = previousOutput[i] + 0.08f * (input[i] - previousOutput[i]);
+            previousOutput[i] = previousOutput[i] + CHANGE_SENSITIVITY * (input[i] - previousOutput[i]);
         }
 
         return previousOutput;
     }
 
     private void mapToPointer(float dpitch, float droll) {
-        int minPixelChange = (int) (5 * screenSizeFactor);
+        int minPixelChange = (int) (MOVEMENT_THRESHOLD_MULTIPLIER * screenSizeFactor);
         int tempdx = (int) (Math.tan(droll) * rollMultiplier);
         int tempdy = (int) (Math.tan(dpitch) * pitchMultiplier);
 
         if (isDwell(xCentre + tempdx, yCentre - tempdy)) {
-            System.out.println("Dwell: " + dwellThreshold);
             return;
         }
 
