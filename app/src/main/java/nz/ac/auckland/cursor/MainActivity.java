@@ -158,8 +158,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void initialiseCursor() {
-        cursor = Objects.requireNonNull(ContextCompat.
+       cursor = Objects.requireNonNull(ContextCompat.
                 getDrawable(getBaseContext(), R.drawable.cursor));
+      //  cursor = ContextCompat.getDrawable(getBaseContext(), R.drawable.cursor);
         cursor.setBounds(new Rect(xCentre, yCentre, xCentre + cursorWidth,
                 yCentre + cursorHeight));
 
@@ -397,6 +398,17 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     Log.d(TAG, "βTAP_SINGLE!");
                     Toast.makeText(getApplicationContext(), "single tap here!", Toast.LENGTH_LONG).show();
 
+                    long downTime = SystemClock.uptimeMillis();
+                    long eventTime = SystemClock.uptimeMillis();
+
+                    MotionEvent downEvent = MotionEvent.
+                            obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
+                    MotionEvent upEvent = MotionEvent
+                            .obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+                    findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
+                    findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
+                    downEvent.recycle();
+                    upEvent.recycle();
 
                     break;
                 case 2:
