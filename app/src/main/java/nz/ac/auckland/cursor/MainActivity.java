@@ -240,7 +240,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             disableUpHandler = true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && volumeBtnState == VolumeBtnState.VOL_UP) {
             volumeBtnState = VolumeBtnState.REST;
-            toggleNextCursor();
+            if (volUpTogglesSensitivity) {
+                toggleNextCursorSensitivity();
+            } else {
+                toggleNextCursor();
+            }
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && volumeBtnState == VolumeBtnState.VOL_UP_LONG) {
             volumeBtnState = VolumeBtnState.REST;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && volumeBtnState == VolumeBtnState.VOL_DOWN) {
@@ -276,7 +280,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
         SensorManager.getOrientation(rotationMatrix, orientationValues);
-        // TODO transform for display rotation https://google-developer-training.gitbooks.io/android-developer-advanced-course-concepts/unit-1-expand-the-user-experience/lesson-3-sensors/3-2-c-motion-and-position-sensors/3-2-c-motion-and-position-sensors.html
 
         pitch = orientationValues[1];
         roll = orientationValues[2];
