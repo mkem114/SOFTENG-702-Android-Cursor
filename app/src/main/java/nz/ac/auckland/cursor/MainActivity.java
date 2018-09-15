@@ -33,6 +33,8 @@ import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 
+import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Arrays;
@@ -111,6 +113,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
+        initialiseCursor();
+        initialiseCoordinates();
+
         ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
                 "com.prhlt.aemus.BoDTapService.BoDTapService");
         Intent intent = new Intent();
@@ -151,6 +156,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return true;
         });
     }
+
     private void initialiseCursor() {
         cursor = Objects.requireNonNull(ContextCompat.
                 getDrawable(getBaseContext(), R.drawable.cursor));
