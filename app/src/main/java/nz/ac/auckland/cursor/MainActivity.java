@@ -97,8 +97,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private SensorManager sensorManager;
     private static final String TAG = "βTapModelTest";
-    TextView text;
-    RelativeLayout layout;
     public Handler messageHandler = new MessageHandler();
 
     protected ServiceConnection mServerConn = new ServiceConnection() {
@@ -140,20 +138,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private void initialiseBackTapService() {
         ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
                 "com.prhlt.aemus.BoDTapService.BoDTapService");
+
         Intent intent = new Intent();
         intent.putExtra("MESSENGER", new Messenger(messageHandler));
         intent.setComponent(componentName);
 
         getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
         ComponentName c = getApplication().startService(intent);
-
-        if (c != null) {
-            Log.i(TAG, "βTap Service started with " + intent);
-            Toast.makeText(getApplicationContext(), "βTap Service started", Toast.LENGTH_LONG).show();
-        } else {
-            Log.e(TAG, "Failed to start the βTap Service with " + intent);
-            Toast.makeText(getApplicationContext(), "Back Tapping does not work", Toast.LENGTH_LONG).show();
-        }
     }
 
     private void initialiseCursors() {
@@ -169,7 +160,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         cursors.add(c2);
         cursors.get(0).updateLocation(xCentre, yCentre);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
-
     }
 
     private void initialiseCoordinates() {
@@ -370,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xArr[0] = newX;
         yArr[0] = newY;
 
-        IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
+       IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
         int diffX = statX.getMax() - statX.getMin();
 
         IntSummaryStatistics statY = Arrays.stream(yArr).summaryStatistics();
@@ -381,6 +371,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             return false;
         }
+
+
     }
 
     /**
@@ -441,13 +433,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 tap = info.getInt("tap");
 
                 switch (tap) {
-                    case 0:
-                        //     Log.d(TAG, "No βTAP!");
-                        break;
                     case 1:
-                        Log.d(TAG, "βTAP_SINGLE!");
-                        Toast.makeText(getApplicationContext(), "single tap here!", Toast.LENGTH_LONG).show();
-
                         long downTime = SystemClock.uptimeMillis();
                         long eventTime = SystemClock.uptimeMillis();
 
@@ -461,12 +447,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         upEvent.recycle();
 
                         break;
-                    case 2:
-                        Log.d(TAG, "βTAP_DOUBLE!");
-                        break;
                     default:
-                        Log.e(TAG, "βTAP Type not recognised!");
-                        break;
+                       break;
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
