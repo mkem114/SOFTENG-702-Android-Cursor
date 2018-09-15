@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        setCursorSensitivity(CursorSensitivity.SMOOTHEST);
+        setCursorSensitivity(CursorSensitivity.DWELL);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -332,17 +332,42 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xArr[0] = newX;
         yArr[0] = newY;
 
-        IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
-        int diffX = statX.getMax() - statX.getMin();
-
-        IntSummaryStatistics statY = Arrays.stream(yArr).summaryStatistics();
-        int diffY = statY.getMax() - statY.getMin();
+        int diffX = getMaxInArray(xArr) - getMinInArray(xArr);
+        int diffY = getMinInArray(yArr) - getMaxInArray(yArr);
 
         if (diffX < dwellThreshold && diffY < dwellThreshold) {
             return true;
         } else {
             return false;
         }
+    }
+
+    private int getMaxInArray(int[] arr) {
+        if (arr.length == 0) {
+            return 0;
+        }
+
+        int max = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] > max) {
+                max = arr[i];
+            }
+        }
+        return max;
+    }
+
+    private int getMinInArray(int[] arr) {
+        if (arr.length == 0) {
+            return 0;
+        }
+
+        int min = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] < min) {
+                min = arr[i];
+            }
+        }
+        return min;
     }
 
     public void setCursorSensitivity(CursorSensitivity sensitivity) {
