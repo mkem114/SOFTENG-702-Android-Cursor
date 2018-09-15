@@ -38,6 +38,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         BOTH,
     }
 
+    enum CursorSensitivity {
+        DWELL,
+        SMOOTHEST,
+        NO_DWELL
+    }
+
     private static final float STANDARD_SCREEN_WIDTH = 720;
     private static final int STANDARD_CURSOR_HEIGHT = 60;
     private static final int STANDARD_CURSOR_WIDTH = 70;
@@ -50,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final int DWELL_THRESHOLD_MULTIPLIER = 80;
     private static final float MOVEMENT_THRESHOLD_MULTIPLIER = 5;
 
+    private CursorSensitivity currentCursorSensitivity;
     private float screenSizeFactor;
     private int dwellThreshold;
     private int[] xArr = new int[DWELL_WINDOW];
@@ -76,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private double pitchMultiplier;
     private double rollMultiplier;
     // sensitivity too
-    private float changeSensitivity = 0.08f;
+    private float changeSensitivity;
 
     private float[] rotationMatrix = new float[9];
     private float[] gravity = new float[3];
@@ -157,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        dwellThreshold = (int) (screenSizeFactor * DWELL_THRESHOLD_MULTIPLIER);
+        setCursorSensitivity(CursorSensitivity.SMOOTHEST);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -210,6 +217,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && volumeBtnState != VolumeBtnState.VOL_UP
                 && volumeBtnState != VolumeBtnState.VOL_UP_LONG) {
             volumeBtnState = VolumeBtnState.VOL_UP;
+            //TODO provide setting to bind VolUp to either change cursor or change sensitivity
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && volumeBtnState != VolumeBtnState.VOL_DOWN
                 && volumeBtnState != VolumeBtnState.VOL_DOWN_LONG) {
@@ -236,8 +244,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             volumeBtnState = VolumeBtnState.REST;
             simulateTouchUp();
         }
-        changeSensitivity = 0.08f;
-        dwellThreshold = (int) (screenSizeFactor * DWELL_THRESHOLD_MULTIPLIER);
+        setCursorSensitivity(currentCursorSensitivity);
         return true;
     }
 
@@ -338,6 +345,33 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    public void setCursorSensitivity(CursorSensitivity sensitivity) {
+        currentCursorSensitivity = sensitivity;
+
+        switch (sensitivity) {
+            case DWELL:
+                dwellThreshold = (int) (screenSizeFactor * DWELL_THRESHOLD_MULTIPLIER);
+                changeSensitivity = 0.08f;
+                break;
+            case NO_DWELL:
+                dwellThreshold = 0;
+                changeSensitivity = 0.08f;
+                break;
+            case SMOOTHEST:
+                dwellThreshold = 10;
+                changeSensitivity = 0.015f;
+                break;
+            default:
+                break;
+        }
+    }
+
+    //TODO this can be bound to some physical button
+    public void cycleCursorSensitivities() {
+        int nextOrdinal = (currentCursorSensitivity.ordinal() + 1) % CursorSensitivity.values().length;
+        currentCursorSensitivity = CursorSensitivity.values()[nextOrdinal];
+    }
+
     /**
      * Scooooooooreeeeee!!!
      */
@@ -345,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long upTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
         MotionEvent downEvent = MotionEvent.
-                obtain(upTime, eventTime, MotionEvent.ACTION_DOWN, (float)x, (float)y, 0);
+                obtain(upTime, eventTime, MotionEvent.ACTION_DOWN, (float) x, (float) y, 0);
         findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
         downEvent.recycle();
     }
@@ -357,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
         MotionEvent upEvent = MotionEvent
-                .obtain(downTime, eventTime, MotionEvent.ACTION_UP, (float)x, (float)y, 0);
+                .obtain(downTime, eventTime, MotionEvent.ACTION_UP, (float) x, (float) y, 0);
         findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
         upEvent.recycle();
     }
@@ -369,7 +403,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         long moveTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
         MotionEvent moveEvent = MotionEvent
-                .obtain(moveTime, eventTime, MotionEvent.ACTION_MOVE, (float)x, (float)y, 0);
+                .obtain(moveTime, eventTime, MotionEvent.ACTION_MOVE, (float) x, (float) y, 0);
         findViewById(android.R.id.content).dispatchTouchEvent(moveEvent);
         moveEvent.recycle();
     }
