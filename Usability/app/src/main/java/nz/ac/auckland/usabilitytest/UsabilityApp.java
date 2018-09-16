@@ -2,10 +2,13 @@ package nz.ac.auckland.usabilitytest;
 
 import android.Manifest;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.hardware.SensorEventListener;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.widget.Button;
@@ -21,7 +24,7 @@ import java.util.Random;
 
 import nz.ac.auckland.cursor.CursorOverlay;
 
-public class MainActivity extends CursorOverlay implements SensorEventListener {
+public class UsabilityApp extends CursorOverlay implements SensorEventListener {
     public static final int NUM_TO_PRESS = 20;
 
     private String logFileName = "/didntLoadYet.txt";
@@ -33,10 +36,28 @@ public class MainActivity extends CursorOverlay implements SensorEventListener {
         super.onCreate(savedInstanceState);
 
         // Get permissions to write to logs
-        ActivityCompat.requestPermissions(MainActivity.this,
+        ActivityCompat.requestPermissions(this,
                 new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                 1);
+    }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == 1 && grantResults.length > 0) {
+            switch ((grantResults[0])) {
+                case PackageManager.PERMISSION_GRANTED:
+                    loadButtons();
+                    break;
+                case PackageManager.PERMISSION_DENIED:
+                    System.exit(1);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private void loadButtons() {
         // Get time
         Calendar calendar = Calendar.getInstance();
         SimpleDateFormat mdformat = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss");
@@ -75,7 +96,8 @@ public class MainActivity extends CursorOverlay implements SensorEventListener {
     private void onClick(View v) {
         int clickedButton = v.getId();
 
-        printToLogs((count + 1) + ". User clicked button:" +
+        String padding = count < 10 ? "0" : "";
+        printToLogs(padding + count + ". User clicked button:" +
                 clickedButton + " @ " + System.currentTimeMillis());
 
         int nextButtonId = v.getId();
@@ -94,7 +116,7 @@ public class MainActivity extends CursorOverlay implements SensorEventListener {
         }
 
         for (Button button : buttons) {
-            if (count == NUM_TO_PRESS - 1 || button == nextButton) {
+            if (count == NUM_TO_PRESS || button == nextButton) {
                 button.setEnabled(true);
             } else {
                 button.setEnabled(false);
@@ -103,7 +125,7 @@ public class MainActivity extends CursorOverlay implements SensorEventListener {
 
         count++;
 
-        if (count >= NUM_TO_PRESS) {
+        if (count > NUM_TO_PRESS) {
             count = 0;
         }
     }
