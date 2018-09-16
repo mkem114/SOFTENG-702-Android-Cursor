@@ -247,7 +247,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
     public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
         if (volumeBtnState != VolumeBtnState.BOTH && keyCode == KeyEvent.KEYCODE_VOLUME_UP && keyEvent.isLongPress()) {
             volumeBtnState = VolumeBtnState.VOL_UP_LONG;
-            changeSensitivity = 0.01f;
+            changeSensitivity = 0.005f;
             dwellThreshold = 0;
             return true;
         }
