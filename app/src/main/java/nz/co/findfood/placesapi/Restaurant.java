@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood.placesapi;
+package nz.co.findfood.placesapi;
 
 import android.location.Location;
 
@@ -6,8 +6,8 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-import nz.co.g1.a702.findfood.BuildConfig;
-import nz.co.g1.a702.findfood.R;
+import nz.co.findfood.BuildConfig;
+import nz.co.findfood.R;
 
 /**
  * Model for a Google Places API response restaurant

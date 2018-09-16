@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood.restaurantdetail;
+package nz.co.findfood.restaurantdetail;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
@@ -8,9 +8,9 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import io.reactivex.Flowable;
-import nz.co.g1.a702.findfood.database.NoteDao;
-import nz.co.g1.a702.findfood.database.NoteDatabase;
-import nz.co.g1.a702.findfood.database.RestaurantNote;
+import nz.co.findfood.database.NoteDao;
+import nz.co.findfood.database.NoteDatabase;
+import nz.co.findfood.database.RestaurantNote;
 
 public class RestaurantDetailViewModel extends AndroidViewModel {
 

@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood.database;
+package nz.co.findfood.database;
 
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;

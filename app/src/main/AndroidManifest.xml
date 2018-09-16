@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="nz.co.g1.a702.findfood"
+<manifest package="nz.co.findfood"
           xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -31,7 +31,7 @@
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="nz.co.g1.a702.findfood.RestaurantListActivity"/>
+                android:value="nz.co.findfood.RestaurantListActivity"/>
         </activity>
     </application>
 

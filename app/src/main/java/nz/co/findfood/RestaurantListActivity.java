@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood;
+package nz.co.findfood;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -12,7 +12,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -26,8 +25,8 @@ import java.util.List;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import nz.ac.auckland.cursor.CursorOverlay;
-import nz.co.g1.a702.findfood.placesapi.Restaurant;
-import nz.co.g1.a702.findfood.restaurantdetail.RestaurantDetailActivity;
+import nz.co.findfood.placesapi.Restaurant;
+import nz.co.findfood.restaurantdetail.RestaurantDetailActivity;
 
 public class RestaurantListActivity extends CursorOverlay {
 

@@ -66,7 +66,3 @@
   **[] $VALUES;
   public *;
 }
-
--obfuscationdictionary obfuscationdictionary.txt
--packageobfuscationdictionary packageobfuscationdictionary.txt
--classobfuscationdictionary classobfuscationdictionary.txt

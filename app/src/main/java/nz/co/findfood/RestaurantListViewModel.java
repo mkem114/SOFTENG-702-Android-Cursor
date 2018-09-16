@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood;
+package nz.co.findfood;
 
 import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
@@ -9,9 +9,9 @@ import java.util.List;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
-import nz.co.g1.a702.findfood.location.LocationRepository;
-import nz.co.g1.a702.findfood.placesapi.PlacesService;
-import nz.co.g1.a702.findfood.placesapi.Restaurant;
+import nz.co.findfood.location.LocationRepository;
+import nz.co.findfood.placesapi.PlacesService;
+import nz.co.findfood.placesapi.Restaurant;
 
 /**
  * ViewModel for the restaurant list

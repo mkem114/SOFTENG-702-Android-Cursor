@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood.location;
+package nz.co.findfood.location;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

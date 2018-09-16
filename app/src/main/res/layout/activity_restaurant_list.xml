@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="nz.co.g1.a702.findfood.RestaurantListActivity">
+    tools:context="nz.co.findfood.RestaurantListActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/main_swipe_refresh"

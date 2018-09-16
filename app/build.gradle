@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "nz.co.g1.a702.findfood"
+        applicationId "nz.co.findfood"
         minSdkVersion 24
         targetSdkVersion 27
         versionCode 1
@@ -11,9 +11,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled true
-            useProguard true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+//            minifyEnabled true
+//            useProguard true
+//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
 //            Proguard config for testing

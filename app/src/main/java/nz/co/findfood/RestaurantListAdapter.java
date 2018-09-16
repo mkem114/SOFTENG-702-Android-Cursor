@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood;
+package nz.co.findfood;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -15,7 +15,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import nz.co.g1.a702.findfood.placesapi.Restaurant;
+import nz.co.findfood.placesapi.Restaurant;
 
 /**
  * List adapter for the restaurant list

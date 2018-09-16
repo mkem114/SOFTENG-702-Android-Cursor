@@ -1,4 +1,4 @@
-package nz.co.g1.a702.findfood.restaurantdetail;
+package nz.co.findfood.restaurantdetail;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.graphics.drawable.Drawable;
@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -25,13 +24,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nz.ac.auckland.cursor.CursorOverlay;
-import nz.co.g1.a702.findfood.R;
-import nz.co.g1.a702.findfood.database.RestaurantNote;
+import nz.co.findfood.R;
+import nz.co.findfood.database.RestaurantNote;
 
-import static nz.co.g1.a702.findfood.RestaurantListActivity.EXTRA_RESTAURANT_ADDRESS;
-import static nz.co.g1.a702.findfood.RestaurantListActivity.EXTRA_RESTAURANT_ID;
-import static nz.co.g1.a702.findfood.RestaurantListActivity.EXTRA_RESTAURANT_NAME;
-import static nz.co.g1.a702.findfood.RestaurantListActivity.EXTRA_RESTAURANT_PHOTO_URL;
+import static nz.co.findfood.RestaurantListActivity.EXTRA_RESTAURANT_ADDRESS;
+import static nz.co.findfood.RestaurantListActivity.EXTRA_RESTAURANT_ID;
+import static nz.co.findfood.RestaurantListActivity.EXTRA_RESTAURANT_NAME;
+import static nz.co.findfood.RestaurantListActivity.EXTRA_RESTAURANT_PHOTO_URL;
 
 public class RestaurantDetailActivity extends CursorOverlay {
     /**
