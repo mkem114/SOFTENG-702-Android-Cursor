@@ -22,6 +22,11 @@ For GitLab, if the link doesn't work, go to Wiki > Releases: http://gitlab.necta
 - Long press Volume Up: Focus mode (cursor moves slowly while the button is held down).
 - Volume Up & Volume Down: Calibrate to re-centre cursor at current pitch and roll angles
 
+### Points to note
+- Each page has it's own cursor, thus cursor selection, sensitivity, and calibration is for that page only
+    - In FindFood, the restaurants list is a page, and every time you click a restaurant it's a new page
+- Back-tapping is an external service and is not 100% stable. Sensitivity also depends on the specific device, and may be too sensitive or too insensitive.
+
 ### Use Cases
 - Single-handed use
 - Phone use without occlusion of the screen
