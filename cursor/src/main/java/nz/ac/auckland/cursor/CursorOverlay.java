@@ -197,22 +197,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         intent.setComponent(componentName);
 
         getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
-        ComponentName c = getApplication().startService(intent);
-
-        if (c == null) {
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(4000);
-                        finish();
-                        System.exit(0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }.start();
-        }
+        getApplication().startService(intent);
     }
 
 
