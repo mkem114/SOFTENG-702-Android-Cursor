@@ -125,10 +125,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 getDrawable(getBaseContext(), R.drawable.cursor2));
 
         Cursor c1 = new Cursor(drawable1, getRealWidth(STANDARD_CURSOR_WIDTH), getRealHeight(STANDARD_CURSOR_HEIGHT), 0, 0);
+        Cursor c1small = new Cursor(drawable1, getRealWidth(STANDARD_CURSOR_WIDTH / 2), getRealHeight(STANDARD_CURSOR_WIDTH / 2), 0, 0);
         Cursor c2 = new Cursor(drawable2, getRealWidth(60), getRealHeight(60), getRealWidth(30), getRealHeight(30));
+        Cursor c2small = new Cursor(drawable2, getRealWidth(30), getRealHeight(30), getRealWidth(15), getRealHeight(15));
 
         cursors.add(c1);
+        cursors.add(c1small);
         cursors.add(c2);
+        cursors.add(c2small);
         cursors.get(0).updateLocation(xCentre, yCentre);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
 
@@ -165,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
         setCursorSensitivity(CursorSensitivity.DWELL);
-        setVolUpTogglesSensitivity(true);
+        setVolUpTogglesSensitivity(false);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -193,7 +197,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      * Cycles between different cursor appearances
      */
     public void toggleNextCursor() {
-        Collections.rotate(cursors, 1);
+        Collections.rotate(cursors, -1);
         findViewById(android.R.id.content).getOverlay().clear();
         cursors.get(0).updateLocation(x, y);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
