@@ -65,7 +65,7 @@ Workflow:
 5. Click that button that's "lit up"
 6. Once you've successfully clicked the button, another button will "light up"
 7. When all the buttons light up (after 20 clicks), the study has finished
-8. Logs can be retrieved from the phone's internal storage at Android/data/nz.ac.auckland.cursor/logs
+8. Logs can be retrieved from the phone's internal storage at Android/data/nz.ac.auckland.usabilitytest/logs
     - the first few lines list the buttons and print their IDs respectively
     - the following 20 lines are the button ID and device system time (ms) at which they were clicked
 9. We take the difference between these times to accurately calculate the time taken to click a button
