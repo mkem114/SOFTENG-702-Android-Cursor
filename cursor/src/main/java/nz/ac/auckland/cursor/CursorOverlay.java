@@ -197,13 +197,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         intent.setComponent(componentName);
 
         getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
-        ComponentName c = getApplication().startService(intent);
-
-        if (c == null) {
-            Toast.makeText(getApplicationContext(), "Back Tap Click not enabled", Toast.LENGTH_SHORT);
-        } else {
-            Toast.makeText(getApplicationContext(), "Back Tap Click enabled", Toast.LENGTH_SHORT);
-        }
+        getApplication().startService(intent);
     }
 
 
