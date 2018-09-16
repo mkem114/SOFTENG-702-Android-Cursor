@@ -36,7 +36,6 @@ You can bind to onSensorChanged's super method to listen to sensor changes.
 See FindFood for an example of a complete app that has our library imported
 
 **Physical Buttons**
-
 Currently, as a proof of concept, the volume up button can be configured to toggle cursor sensitivity or switch cursor. This is an example of settings the application developer using our library can provide, to give their users more fine-grained control.
 
 **Cursor Sensitivity Levels**
