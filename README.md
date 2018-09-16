@@ -1,9 +1,15 @@
 # project-13-a SOFTENG-702-Android-Cursor
 [![Build Status](https://travis-ci.com/mkem114/SOFTENG-702-Android-Cursor.svg?token=4tn5PhULbqssssJGM5Gs&branch=master)](https://travis-ci.com/mkem114/SOFTENG-702-Android-Cursor)
 
-Pointing and clicking with accelerometers
+Android library for pointing and clicking with a floated cursor using sensors
 
 **See releases for apk download: [GitLab](http://gitlab.nectar.auckland.ac.nz/literate-chickens/project-13-a/wikis/Releases), [GitHub](https://github.com/mkem114/SOFTENG-702-Android-Cursor/releases)**
+
+## System Requirements
+
+- Android phone
+- SDK at least 24 (Android 7.0)
+    - Target SDK is 27 (Android 8.1)
 
 ## Use
 
@@ -19,6 +25,25 @@ Pointing and clicking with accelerometers
 - Phone use without occlusion of the screen
 - Projecting phone screen onto a display and interacting (e.g. for demos)
 
+## Physical Buttons
+
+Currently, as a proof of concept, the volume up button can be configured to toggle cursor sensitivity or switch cursor. This is an example of settings the application developer using our library can provide, to give their users more fine-grained control.
+
+_User Study app provides this setting, so users can set VOL_UP to change cursor sensitivity, and select the mode that they prefer (see Cursor Sensitivity Levels below)._
+
+_FindFood does not provide this setting, and the developer (us) has set in the code that VOL_UP changes the cursor appearance. The user therefore cannot change the cursor sensitivity._
+
+## Cursor Sensitivity Levels
+
+*   DWELL: if we think you intend on dwelling on the same location, we will keep the cursor stationary from jitter
+*   SMOOTHEST: lowest sensitivity to change in angles, but may appear laggy
+*   NO_DWELL: same sensitivity as dwell, but won't keep cursor stationary, for fine-grained control
+
+_Note: FindFood is set to SMOOTHEST_
+
+## Back-Tapping to Click Functionality
+
+In order to utilising tapping the back of the device for clicking, the βTap Service application must be installed on the device. Simply install the application from Google Play - [Download βTap Service](https://play.google.com/store/apps/details?id=com.prhlt.aemus.BoDTapService). Then, the application that uses the cursor should be able to perform the clicking function via a back tap.
 
 ## For developers
 
@@ -41,26 +66,6 @@ You can bind to onSensorChanged's super method to listen to sensor changes.
 - `simulateTouchUp()` - simulate a touch release event on the current position
 
 _See FindFood for an example of a complete app that has our library imported_
-
-## Physical Buttons
-
-Currently, as a proof of concept, the volume up button can be configured to toggle cursor sensitivity or switch cursor. This is an example of settings the application developer using our library can provide, to give their users more fine-grained control.
-
-_User Study app provides this setting, so users can set VOL_UP to change cursor sensitivity, and select the mode that they prefer (see Cursor Sensitivity Levels below)._
-
-_FindFood does not provide this setting, and the developer (us) has set in the code that VOL_UP changes the cursor appearance. The user therefore cannot change the cursor sensitivity._
-
-## Cursor Sensitivity Levels
-
-*   DWELL: if we think you intend on dwelling on the same location, we will keep the cursor stationary from jitter
-*   SMOOTHEST: lowest sensitivity to change in angles, but may appear laggy
-*   NO_DWELL: same sensitivity as dwell, but won't keep cursor stationary, for fine-grained control
-
-_Note: FindFood is set to SMOOTHEST_
-
-## Back-Tapping to Click Functionality
-
-In order to utilising tapping the back of the device for clicking, the βTap Service application must be installed on the device. Simply install the application from Google Play - [Download βTap Service](https://play.google.com/store/apps/details?id=com.prhlt.aemus.BoDTapService). Then, the application that uses the cursor should be able to perform the clicking function via a back tap.
 
 ## Project Plan vs. Implementation
 
