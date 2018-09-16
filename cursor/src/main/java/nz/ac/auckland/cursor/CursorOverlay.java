@@ -200,18 +200,9 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         ComponentName c = getApplication().startService(intent);
 
         if (c == null) {
-            new Thread() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(4000);
-                        finish();
-                        System.exit(0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }.start();
+            Toast.makeText(getApplicationContext(), "Back Tap Click not enabled", Toast.LENGTH_SHORT);
+        } else {
+            Toast.makeText(getApplicationContext(), "Back Tap Click enabled", Toast.LENGTH_SHORT);
         }
     }
 
