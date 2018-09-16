@@ -3,24 +3,31 @@
 
 Pointing and clicking with accelerometers
 
+**See releases for apk download: [GitLab](http://gitlab.nectar.auckland.ac.nz/literate-chickens/project-13-a/wikis/Releases), [GitHub](https://github.com/mkem114/SOFTENG-702-Android-Cursor/releases)**
+
 ## Use
 
+### Interactions
 - Volume Down: Click
 - Long Press Volume Down: Dragging (e.g. drag refresh, scroll, drag and drop)
 - Volume Up: Traverse through different cursors or changing sensitivity (depending on a setting).
 - Long press Volume Up: Focus mode (cursor moves slowly while the button is held down).
 - Volume Up & Volume Down: Calibrate to re-centre cursor at current pitch and roll angles
 
+### Use Cases
+- Single-handed use
+- Phone use without occlusion of the screen
+- Projecting phone screen onto a display and interacting (e.g. for demos)
 
-## Install
-
-Run `gradle clean installDebug` locally
 
 ## For developers
 
+### Install
 Install the library `cursor` by importing it using New -> Import Module and selecting the cursor module in master
 
-## Customization
+Run `gradle clean installDebug` locally
+
+### Customise
 
 You want to extend the current Activity using the Cursor Activity class. This class allows your view to use the cursor.
 You can bind to onSensorChanged's super method to listen to sensor changes.
@@ -33,14 +40,13 @@ You can bind to onSensorChanged's super method to listen to sensor changes.
 - `simulateTouchDown()` - simulate a touch down event on the current position
 - `simulateTouchUp()` - simulate a touch release event on the current position
 
-See FindFood for an example of a complete app that has our library imported
+_See FindFood for an example of a complete app that has our library imported_
 
-**Physical Buttons**
+## Physical Buttons
+
 Currently, as a proof of concept, the volume up button can be configured to toggle cursor sensitivity or switch cursor. This is an example of settings the application developer using our library can provide, to give their users more fine-grained control.
 
-**Cursor Sensitivity Levels**
-
-
+## Cursor Sensitivity Levels
 
 *   DWELL: if we think you intend on dwelling on the same location, we will keep the cursor stationary from jitter
 *   SMOOTHEST: lowest sensitivity to change in angles, but may appear laggy
@@ -48,12 +54,11 @@ Currently, as a proof of concept, the volume up button can be configured to togg
 
 _Note: FindFood is set to SMOOTHEST_
 
-**Back Tapper Functionality**
+## Back-Tapping to Click Functionality
 
 In order to utilising tapping the back of the device for clicking, the βTap Service application must be installed on the device. Simply install the application from Google Play - [Download βTap Service](https://play.google.com/store/apps/details?id=com.prhlt.aemus.BoDTapService). Then, the application that uses the cursor should be able to perform the clicking function via a back tap.
 
-**Project Plan vs. Implementation**
-
+## Project Plan vs. Implementation
 
 <table>
   <tr>
@@ -226,7 +231,6 @@ We cannot be a system application to overlay other applications due to security 
    </td>
   </tr>
 </table>
-
 
 **Note to the Marker: Teamwork and Workflow**
 
