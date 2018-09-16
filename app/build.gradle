@@ -10,18 +10,8 @@ android {
         versionName "1.0"
     }
     buildTypes {
-        release {
-//            minifyEnabled true
-//            useProguard true
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-        debug {
-//            Proguard config for testing
-//
-//            minifyEnabled true
-//            useProguard true
-//            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
+        release {}
+        debug {}
         buildTypes.each {
             it.buildConfigField 'String', 'GOOGLE_API_KEY', "\"" + getApiKey() + "\""
         }

@@ -108,14 +108,10 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
 
     protected ServiceConnection mServerConn = new ServiceConnection() {
         @Override
-        public void onServiceConnected(ComponentName name, IBinder binder) {
-            Log.i(TAG, "onServiceConnected");
-        }
+        public void onServiceConnected(ComponentName name, IBinder binder) {}
 
         @Override
-        public void onServiceDisconnected(ComponentName name) {
-            Log.i(TAG, "onServiceDisconnected");
-        }
+        public void onServiceDisconnected(ComponentName name) {}
     };
 
     @Override
@@ -126,7 +122,6 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
 
         initialiseCursors();
         initialiseCoordinates();
-//        initialiseBackTapService();
     }
 
     private void initialiseBackTapService() {
@@ -141,8 +136,6 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         ComponentName c = getApplication().startService(intent);
 
         if (c == null) {
-            Toast.makeText(getApplicationContext(), "Failed to start the βTap Service", Toast.LENGTH_LONG).show();
-            Log.e(TAG, "Failed to start the βTap Service with " + intent);
             new Thread(){
                 @Override
                 public void run() {
@@ -155,9 +148,6 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
                     }
                 }
             }.start();
-        }else{
-            Toast.makeText(getApplicationContext(), "βTap Service started", Toast.LENGTH_LONG).show();
-            Log.i(TAG, "βTap Service started with " + intent);
         }
     }
 
@@ -304,9 +294,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-        //unused. Do nothing
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
 
     private void calibrate() {
         pitchOffset = pitch;
@@ -394,9 +382,6 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         } else {
             return false;
         }
-
-//       return false;
-
     }
 
     private int getMaxInArray(int[] arr) {
