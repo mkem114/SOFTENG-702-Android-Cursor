@@ -28,7 +28,7 @@ public class Cursor {
 
     public void updateLocation(int x, int y) {
         Rect bounds = cursor.copyBounds();
-        Log.e("Cursor", String.format("Top: %s, Left: %s, Right: %s, Bottom: %s", bounds.top, bounds.left, bounds.right, bounds.bottom));
+     //   Log.e("Cursor", String.format("Top: %s, Left: %s, Right: %s, Bottom: %s", bounds.top, bounds.left, bounds.right, bounds.bottom));
         bounds.left = x - centerX;
         bounds.top = y - centerY;
         bounds.right = x + width - centerX;

@@ -154,6 +154,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
         ComponentName c = getApplication().startService(intent);
+
+        if (c == null) {
+            Toast.makeText(getApplicationContext(), "Failed to start the βTap Service", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Failed to start the βTap Service with " + intent);
+            new Thread(){
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(4000);
+                        finish();
+                        System.exit(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }else{
+            Toast.makeText(getApplicationContext(), "βTap Service started", Toast.LENGTH_LONG).show();
+            Log.i(TAG, "βTap Service started with " + intent);
+        }
     }
 
     private void initialiseCursors() {
@@ -369,7 +389,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xArr[0] = newX;
         yArr[0] = newY;
 
-       IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
+        IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
         int diffX = statX.getMax() - statX.getMin();
 
         IntSummaryStatistics statY = Arrays.stream(yArr).summaryStatistics();
@@ -381,6 +401,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             return false;
         }
 
+//       return false;
 
     }
 
@@ -465,27 +486,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             try {
                 info = new JSONObject(message.getData().getString("data"));
-                int tap = 0;
+                int tap;
                 tap = info.getInt("tap");
 
-                switch (tap) {
-                    case 1:
-                        long downTime = SystemClock.uptimeMillis();
-                        long eventTime = SystemClock.uptimeMillis();
-
-                        MotionEvent downEvent = MotionEvent.
-                                obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
-                        MotionEvent upEvent = MotionEvent
-                                .obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
-                        findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
-                        findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
-                        downEvent.recycle();
-                        upEvent.recycle();
-
-                        break;
-                    default:
-                       break;
+                if (tap == 1 || tap == 2) {
+                    long downTime = SystemClock.uptimeMillis();
+                    long eventTime = SystemClock.uptimeMillis();
+                    MotionEvent downEvent = MotionEvent.
+                            obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
+                    MotionEvent upEvent = MotionEvent
+                            .obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+                    findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
+                    findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
+                    downEvent.recycle();
+                    upEvent.recycle();
                 }
+
             } catch (JSONException e) {
                 e.printStackTrace();
             }
