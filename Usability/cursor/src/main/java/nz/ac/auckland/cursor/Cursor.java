@@ -18,8 +18,6 @@ public class Cursor {
         this.height = height;
         this.centerX = centerX;
         this.centerY = centerY;
-        Log.e("Cursor", String.format("Width: %d, Height: %d", width, height));
-
     }
 
     public Drawable getDrawable() {
@@ -28,7 +26,6 @@ public class Cursor {
 
     public void updateLocation(int x, int y) {
         Rect bounds = cursor.copyBounds();
-        Log.e("Cursor", String.format("Top: %s, Left: %s, Right: %s, Bottom: %s", bounds.top, bounds.left, bounds.right, bounds.bottom));
         bounds.left = x - centerX;
         bounds.top = y - centerY;
         bounds.right = x + width - centerX;

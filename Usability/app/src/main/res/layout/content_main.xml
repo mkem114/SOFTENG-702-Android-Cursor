@@ -20,33 +20,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0">
 
-        <android.support.design.widget.TabLayout
-            android:id="@+id/tabLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/linearLayout">
-
-            <android.support.design.widget.TabItem
-                android:id="@+id/numPad"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="EXAMPLE 1" />
-
-            <android.support.design.widget.TabItem
-                android:id="@+id/example2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Example 2" />
-
-            <android.support.design.widget.TabItem
-                android:id="@+id/example3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Example 3" />
-        </android.support.design.widget.TabLayout>
-
         <android.support.constraint.ConstraintLayout
             android:id="@+id/gridLayout"
             android:layout_width="match_parent"
@@ -143,6 +116,60 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.65999997" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <TextView
+                    android:id="@+id/textView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="VolumeUp Short-Press: " />
+
+                <RadioGroup
+                    android:id="@+id/radios"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <RadioButton
+                        android:id="@+id/Vsens"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:checked="false"
+                        android:text="Change Sensitivity"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent" />
+
+                    <RadioButton
+                        android:id="@+id/Vcursor"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_marginStart="8dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_weight="1"
+                        android:checked="true"
+                        android:text="Change Cursor"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.502"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </RadioGroup>
+
+            </LinearLayout>
+
         </android.support.constraint.ConstraintLayout>
 
     </LinearLayout>
