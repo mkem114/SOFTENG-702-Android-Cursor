@@ -5,6 +5,8 @@ Android library for pointing and clicking with a floated cursor using sensors
 
 **See releases for apk download: [GitLab](http://gitlab.nectar.auckland.ac.nz/literate-chickens/project-13-a/wikis/Releases), [GitHub](https://github.com/mkem114/SOFTENG-702-Android-Cursor/releases)**
 
+For GitLab, if the link doesn't work, go to Wiki > Releases: http://gitlab.nectar.auckland.ac.nz/literate-chickens/project-13-a/wikis/Releases
+
 ## System Requirements
 
 - Android phone
