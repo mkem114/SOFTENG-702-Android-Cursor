@@ -18,7 +18,6 @@ import android.os.Message;
 import android.os.Messenger;
 import android.util.Log;
 import android.view.WindowManager;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.os.SystemClock;
@@ -544,6 +543,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 e.printStackTrace();
             }
         }
+    }
 
     /**
      * API method for developer to set what vol up button does
