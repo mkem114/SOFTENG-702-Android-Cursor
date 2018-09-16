@@ -3,10 +3,58 @@
 
 Pointing and clicking with accelerometers
 
-## Make changes to the table via the Google DOC
+## Use
 
-### Back Tapper Functionality
-To ensure that back tapping works, the βTap Service application must be installed on the device. Simply install the application from Google Play - [Download βTap Service](https://play.google.com/store/apps/details?id=com.prhlt.aemus.BoDTapService). Then, the application that uses the cursor should be able to perform the clicking function via a back tap.
+- Volume Down: Click
+- Long Press Volume Down: Dragging (e.g. drag refresh, scroll, drag and drop)
+- Volume Up: Traverse through different cursors or changing sensitivity (depending on a setting).
+- Long press Volume Up: Focus mode (cursor moves slowly while the button is held down).
+- Volume Up & Volume Down: Calibrate to re-centre cursor at current pitch and roll angles
+
+
+## Install
+
+Run `gradle clean installDebug` locally
+
+## For developers
+
+Install the library `cursor` by importing it using New -> Import Module and selecting the cursor module in master
+
+## Customization
+
+You want to extend the current Activity using the Cursor Activity class. This class allows your view to use the cursor.
+You can bind to onSensorChanged's super method to listen to sensor changes.
+
+- `setCursorSensitivity(CursorSensitivity sensitivity)` - sets the current cursor's sensitivity
+- `setVolUpTogglesSensitivity(boolean togglesSensitivity)` - Set what vol up button does. Currently either toggles cursor sensitivity or switches cursor
+- `toggleNextCursorSensitivity()` - toggles to the next cursor's preset sensitivity
+- `toggleNextCursor()` - cycles between different cursor appearances
+- `simulateTouchMove()` - simulate a touch move event on the current position
+- `simulateTouchDown()` - simulate a touch down event on the current position
+- `simulateTouchUp()` - simulate a touch release event on the current position
+
+See FindFood for an example of a complete app that has our library imported
+
+**Physical Buttons**
+
+Currently, as a proof of concept, the volume up button can be configured to toggle cursor sensitivity or switch cursor. This is an example of settings the application developer using our library can provide, to give their users more fine-grained control.
+
+**Cursor Sensitivity Levels**
+
+
+
+*   DWELL: if we think you intend on dwelling on the same location, we will keep the cursor stationary from jitter
+*   SMOOTHEST: lowest sensitivity to change in angles, but may appear laggy
+*   NO_DWELL: same sensitivity as dwell, but won't keep cursor stationary, for fine-grained control
+
+_Note: FindFood is set to SMOOTHEST_
+
+**Back Tapper Functionality**
+
+In order to utilising tapping the back of the device for clicking, the βTap Service application must be installed on the device. Simply install the application from Google Play - [Download βTap Service](https://play.google.com/store/apps/details?id=com.prhlt.aemus.BoDTapService). Then, the application that uses the cursor should be able to perform the clicking function via a back tap.
+
+**Project Plan vs. Implementation**
+
 
 <table>
   <tr>
@@ -15,10 +63,6 @@ To ensure that back tapping works, the βTap Service application must be install
    <td><strong>Implementation</strong>
    </td>
    <td><strong>Is achieved</strong>
-   </td>
-  </tr>
-  <tr>
-   <td colspan="3" ><strong>Study Plan</strong>
    </td>
   </tr>
   <tr>
@@ -161,7 +205,7 @@ We cannot be a system application to overlay other applications due to security 
   <tr>
    <td>Recentering/calibration 
    </td>
-   <td>The cursor can be recentered according to the pitch and roll angles. 
+   <td>The cursor can be recentered according to the current pitch and roll angles. 
    </td>
    <td>Achieved
    </td>
@@ -177,9 +221,9 @@ We cannot be a system application to overlay other applications due to security 
   <tr>
    <td>Demo application
    </td>
-   <td>Utilized Find Food for using the point and click method for a realistic application. Also implemented a sample application which would provide a suitable indication for the usability study
+   <td>Utilized FindFood for using the point and click method for a realistic application. Also implemented a sample application which would provide a suitable indication for the usability study
    </td>
-   <td>It has been applied to existing / created applications.
+   <td>It has been applied to standalone applications.
    </td>
   </tr>
 </table>
