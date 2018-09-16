@@ -5,10 +5,12 @@ Pointing and clicking with accelerometers
 
 ## Use
 
-- VOL_DOWN - simulate touch press (drag/drop supported if you hold down!)
-- VOL_UP - cycle through available cursors
-- VOL_UP (long press) - toggle focused mode (decrease sensitivity, slow down movements)
-- Both VOL_UP and VOL_DOWN together (short tap) - calibrate to centre
+- Volume Down: Click
+- Long Press Volume Down: Dragging (e.g. drag refresh, scroll, drag and drop)
+- Volume Up: Traverse through different cursors or changing sensitivity (depending on a setting).
+- Long press Volume Up: Focus mode (cursor moves slowly while the button is held down).
+- Volume Up & Volume Down: Calibrate to re-centre cursor at current pitch and roll angles
+
 
 ## Install
 
