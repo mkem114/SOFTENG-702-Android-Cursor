@@ -1,6 +1,9 @@
 package nz.ac.auckland.cursor;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -9,6 +12,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.util.Log;
+import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -16,16 +27,16 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Objects;
-
-
+   
 public class MainActivity extends AppCompatActivity implements SensorEventListener {
 
     enum VolumeBtnState {
@@ -47,8 +58,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private static final int STANDARD_CURSOR_HEIGHT = 60;
     private static final int STANDARD_CURSOR_WIDTH = 70;
 
-    private int cursorHeight = STANDARD_CURSOR_HEIGHT;
-    private int cursorWidth = STANDARD_CURSOR_WIDTH;
     private List<Cursor> cursors = new ArrayList<>();
 
     private static final int DWELL_WINDOW = 80;
@@ -94,15 +103,31 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private boolean volUpTogglesSensitivity;
 
     private SensorManager sensorManager;
+    private static final String TAG = "βTapModelTest";
+    public Handler messageHandler = new MessageHandler();
+
+    protected ServiceConnection mServerConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+            Log.i(TAG, "onServiceConnected");
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.i(TAG, "onServiceDisconnected");
+        }
+    };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         initialiseCursors();
         initialiseCoordinates();
+        initialiseBackTapService();
 
         final TextView textView = (TextView) findViewById(R.id.value_format);
 
@@ -116,6 +141,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             view.performClick();
             return true;
         });
+    }
+
+    private void initialiseBackTapService() {
+        ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
+                "com.prhlt.aemus.BoDTapService.BoDTapService");
+
+        Intent intent = new Intent();
+        intent.putExtra("MESSENGER", new Messenger(messageHandler));
+        intent.setComponent(componentName);
+
+        getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
+        ComponentName c = getApplication().startService(intent);
+
+        if (c == null) {
+            Toast.makeText(getApplicationContext(), "Failed to start the βTap Service", Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Failed to start the βTap Service with " + intent);
+            new Thread(){
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(4000);
+                        finish();
+                        System.exit(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }else{
+            Toast.makeText(getApplicationContext(), "βTap Service started", Toast.LENGTH_LONG).show();
+            Log.i(TAG, "βTap Service started with " + intent);
+        }
     }
 
     private void initialiseCursors() {
@@ -135,7 +192,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         cursors.add(c2small);
         cursors.get(0).updateLocation(xCentre, yCentre);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
-
     }
 
     private void initialiseCoordinates() {
@@ -350,6 +406,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else {
             return false;
         }
+
+//       return false;
+
     }
 
     private int getMaxInArray(int[] arr) {
@@ -446,6 +505,46 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         moveEvent.recycle();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
+                "com.prhlt.aemus.BoDTapService.BoDTapService");
+        Intent intent = new Intent();
+        intent.setComponent(componentName);
+        getApplication().stopService(intent);
+        getApplication().unbindService(mServerConn);
+    }
+
+    public class MessageHandler extends Handler {
+        @Override
+        public void handleMessage(Message message) {
+            JSONObject info = null;
+
+            try {
+                info = new JSONObject(message.getData().getString("data"));
+                int tap;
+                tap = info.getInt("tap");
+
+                if (tap == 1 || tap == 2) {
+                    long downTime = SystemClock.uptimeMillis();
+                    long eventTime = SystemClock.uptimeMillis();
+                    MotionEvent downEvent = MotionEvent.
+                            obtain(downTime, eventTime, MotionEvent.ACTION_DOWN, x, y, 0);
+                    MotionEvent upEvent = MotionEvent
+                            .obtain(downTime, eventTime, MotionEvent.ACTION_UP, x, y, 0);
+                    findViewById(android.R.id.content).dispatchTouchEvent(downEvent);
+                    findViewById(android.R.id.content).dispatchTouchEvent(upEvent);
+                    downEvent.recycle();
+                    upEvent.recycle();
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     /**
      * API method for developer to set what vol up button does
      * Currently either toggles cursor sensitivity or switches cursor
@@ -454,5 +553,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
      */
     public void setVolUpTogglesSensitivity(boolean togglesSensitivity) {
         volUpTogglesSensitivity = togglesSensitivity;
+
     }
 }
