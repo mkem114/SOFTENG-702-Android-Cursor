@@ -29,6 +29,4 @@ You can bind to onSensorChanged's super method to listen to sensor changes.
 - simulateTouchDown() - simulate a touch down event on the current position
 - simulateTouchUp() - simulate a touch release event on the current position
 
-You can also make a setting in your app that calls these methods to give user more control
 See FindFood for an example of a complete app that has our library imported
-Something something something
