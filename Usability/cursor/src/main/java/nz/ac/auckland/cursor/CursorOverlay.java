@@ -2,6 +2,7 @@ package nz.ac.auckland.cursor;
 
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
@@ -12,10 +13,16 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
+import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -28,8 +35,14 @@ import android.view.WindowManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -93,6 +106,10 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
     private int dy = 0;
     private int dx = 0;
 
+    // Logging
+    private String logFileName = "/SE702-LOGS-" + (new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss")).format(Calendar.getInstance().getTime()) + ".txt";
+    FileOutputStream fos = null;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -101,6 +118,31 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
 
         initialiseCursors();
         initialiseCoordinates();
+
+        File backupPath = Environment.getExternalStorageDirectory();
+        backupPath = new File(backupPath.getPath() +
+                "/Android/data/nz.ac.auckland.usabilitytest/logs");
+        if (!backupPath.exists()) {
+            if (!backupPath.mkdirs()) {
+                AlertDialog.Builder delmessagebuilder = new AlertDialog.Builder(this);
+                delmessagebuilder.setCancelable(false);
+                delmessagebuilder.setMessage("Couldn't make directory for logs");
+                delmessagebuilder.setNeutralButton("Okay",
+                        ((DialogInterface dialog, int id) -> dialog.dismiss()));
+                delmessagebuilder.create().show();
+            }
+        }
+        try {
+            fos = fos == null ? new FileOutputStream(backupPath.getPath() + logFileName, true) : fos;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            AlertDialog.Builder delmessagebuilder = new AlertDialog.Builder(this);
+            delmessagebuilder.setCancelable(false);
+            delmessagebuilder.setMessage("Couldn't open log file");
+            delmessagebuilder.setNeutralButton("Okay",
+                    ((DialogInterface dialog, int id) -> dialog.dismiss()));
+            delmessagebuilder.create().show();
+        }
     }
 
     @Override
@@ -213,6 +255,11 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
     protected void onStop() {
         super.onStop();
         sensorManager.unregisterListener(this);
+        try {
+            fos.close();
+        } catch (Exception e) {
+            //TODO
+        }
     }
 
     @Override
@@ -285,22 +332,35 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
 
     @Override
     public void onSensorChanged(SensorEvent event) {
+        StringBuilder sb = new StringBuilder();
+        float[] f;
         switch (event.sensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
                 gravity = lowPass(event.values.clone(), gravity);
+                sb.append("Accelerometer values: ");
+                f = gravity;
                 break;
             case Sensor.TYPE_MAGNETIC_FIELD:
                 geomagnetic = lowPass(event.values.clone(), geomagnetic);
+                sb.append("Geomagnetic values: ");
+                f = geomagnetic;
                 break;
             default:
                 return;
         }
+        for (float fl : f) {
+            sb.append(fl);
+            sb.append(',');
+        }
+        printToLogs(sb.toString());
 
         SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
         SensorManager.getOrientation(rotationMatrix, orientationValues);
 
         pitch = orientationValues[1];
         roll = orientationValues[2];
+        printToLogs("Pitch:" + pitch);
+        printToLogs("Roll:" + roll);
 
         float dpitch = pitch - pitchOffset;
         float droll = roll - rollOffset;
@@ -517,6 +577,20 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void printToLogs(String message) {
+        try {
+            fos.write((message + "\n").getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            AlertDialog.Builder delmessagebuilder = new AlertDialog.Builder(this);
+            delmessagebuilder.setCancelable(false);
+            delmessagebuilder.setMessage("Couldn't write to log file");
+            delmessagebuilder.setNeutralButton("Okay",
+                    ((DialogInterface dialog, int id) -> dialog.dismiss()));
+            delmessagebuilder.create().show();
         }
     }
 }
