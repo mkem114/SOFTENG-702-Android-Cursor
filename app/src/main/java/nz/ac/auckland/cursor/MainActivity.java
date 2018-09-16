@@ -21,7 +21,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -92,6 +91,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private VolumeBtnState volumeBtnState;
     private boolean disableUpHandler = false;
+    private boolean volUpTogglesSensitivity;
 
     private SensorManager sensorManager;
 
@@ -125,10 +125,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 getDrawable(getBaseContext(), R.drawable.cursor2));
 
         Cursor c1 = new Cursor(drawable1, getRealWidth(STANDARD_CURSOR_WIDTH), getRealHeight(STANDARD_CURSOR_HEIGHT), 0, 0);
+        Cursor c1small = new Cursor(drawable1, getRealWidth(STANDARD_CURSOR_WIDTH / 2), getRealHeight(STANDARD_CURSOR_WIDTH / 2), 0, 0);
         Cursor c2 = new Cursor(drawable2, getRealWidth(60), getRealHeight(60), getRealWidth(30), getRealHeight(30));
+        Cursor c2small = new Cursor(drawable2, getRealWidth(30), getRealHeight(30), getRealWidth(15), getRealHeight(15));
 
         cursors.add(c1);
+        cursors.add(c1small);
         cursors.add(c2);
+        cursors.add(c2small);
         cursors.get(0).updateLocation(xCentre, yCentre);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
 
@@ -164,7 +168,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        setCursorSensitivity(CursorSensitivity.SMOOTHEST);
+        setCursorSensitivity(CursorSensitivity.DWELL);
+        setVolUpTogglesSensitivity(false);
 
         sensorManager.registerListener(this,
                 sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
@@ -188,8 +193,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         return (int) (screenSizeFactor * width);
     }
 
+    /**
+     * Cycles between different cursor appearances
+     */
     public void toggleNextCursor() {
-        Collections.rotate(cursors, 1);
+        Collections.rotate(cursors, -1);
         findViewById(android.R.id.content).getOverlay().clear();
         cursors.get(0).updateLocation(x, y);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
@@ -217,7 +225,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && volumeBtnState != VolumeBtnState.VOL_UP
                 && volumeBtnState != VolumeBtnState.VOL_UP_LONG) {
             volumeBtnState = VolumeBtnState.VOL_UP;
-            //TODO provide setting to bind VolUp to either change cursor or change sensitivity
             return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && volumeBtnState != VolumeBtnState.VOL_DOWN
                 && volumeBtnState != VolumeBtnState.VOL_DOWN_LONG) {
@@ -237,7 +244,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             disableUpHandler = true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && volumeBtnState == VolumeBtnState.VOL_UP) {
             volumeBtnState = VolumeBtnState.REST;
-            toggleNextCursor();
+            if (volUpTogglesSensitivity) {
+                toggleNextCursorSensitivity();
+            } else {
+                toggleNextCursor();
+            }
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && volumeBtnState == VolumeBtnState.VOL_UP_LONG) {
             volumeBtnState = VolumeBtnState.REST;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN && volumeBtnState == VolumeBtnState.VOL_DOWN) {
@@ -273,7 +284,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         SensorManager.getRotationMatrix(rotationMatrix, null, gravity, geomagnetic);
         SensorManager.getOrientation(rotationMatrix, orientationValues);
-        // TODO transform for display rotation https://google-developer-training.gitbooks.io/android-developer-advanced-course-concepts/unit-1-expand-the-user-experience/lesson-3-sensors/3-2-c-motion-and-position-sensors/3-2-c-motion-and-position-sensors.html
 
         pitch = orientationValues[1];
         roll = orientationValues[2];
@@ -332,11 +342,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         xArr[0] = newX;
         yArr[0] = newY;
 
-        IntSummaryStatistics statX = Arrays.stream(xArr).summaryStatistics();
-        int diffX = statX.getMax() - statX.getMin();
-
-        IntSummaryStatistics statY = Arrays.stream(yArr).summaryStatistics();
-        int diffY = statY.getMax() - statY.getMin();
+        int diffX = getMaxInArray(xArr) - getMinInArray(xArr);
+        int diffY = getMinInArray(yArr) - getMaxInArray(yArr);
 
         if (diffX < dwellThreshold && diffY < dwellThreshold) {
             return true;
@@ -345,6 +352,44 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
     }
 
+    private int getMaxInArray(int[] arr) {
+        if (arr.length == 0) {
+            return 0;
+        }
+
+        int max = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] > max) {
+                max = arr[i];
+            }
+        }
+        return max;
+    }
+
+    private int getMinInArray(int[] arr) {
+        if (arr.length == 0) {
+            return 0;
+        }
+
+        int min = arr[0];
+        for (int i = 1; i < arr.length; i++) {
+            if (arr[i] < min) {
+                min = arr[i];
+            }
+        }
+        return min;
+    }
+
+    /**
+     * API method for developer for set sensitivity
+     * toggleNextCursorSensitivity() cycles between these levels
+     *
+     * @param sensitivity DWELL: if we think you intend on dwelling on the same location, we will keep the cursor
+     *                    stationary from jitter
+     *                    SMOOTHEST: lowest sensitivity to change in angles, but may appear laggy
+     *                    NO_DWELL: same sensitivity as dwell, but won't keep cursor stationary,
+     *                    for fine-grained control
+     */
     public void setCursorSensitivity(CursorSensitivity sensitivity) {
         currentCursorSensitivity = sensitivity;
 
@@ -353,28 +398,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 dwellThreshold = (int) (screenSizeFactor * DWELL_THRESHOLD_MULTIPLIER);
                 changeSensitivity = 0.08f;
                 break;
-            case NO_DWELL:
-                dwellThreshold = 0;
-                changeSensitivity = 0.08f;
-                break;
             case SMOOTHEST:
                 dwellThreshold = 10;
                 changeSensitivity = 0.015f;
+                break;
+            case NO_DWELL:
+                dwellThreshold = 0;
+                changeSensitivity = 0.08f;
                 break;
             default:
                 break;
         }
     }
 
-    //TODO this can be bound to some physical button
-    public void cycleCursorSensitivities() {
+    /**
+     * Cycles between different cursor preset sensitivity levels
+     */
+    public void toggleNextCursorSensitivity() {
         int nextOrdinal = (currentCursorSensitivity.ordinal() + 1) % CursorSensitivity.values().length;
         currentCursorSensitivity = CursorSensitivity.values()[nextOrdinal];
     }
 
-    /**
-     * Scooooooooreeeeee!!!
-     */
     public void simulateTouchDown() {
         long upTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
@@ -384,9 +428,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         downEvent.recycle();
     }
 
-    /**
-     * All natural
-     */
     public void simulateTouchUp() {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
@@ -396,9 +437,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         upEvent.recycle();
     }
 
-    /**
-     * Isn't that some sort of chess rule?
-     */
     public void simulateTouchMove() {
         long moveTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
@@ -406,5 +444,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 .obtain(moveTime, eventTime, MotionEvent.ACTION_MOVE, (float) x, (float) y, 0);
         findViewById(android.R.id.content).dispatchTouchEvent(moveEvent);
         moveEvent.recycle();
+    }
+
+    /**
+     * API method for developer to set what vol up button does
+     * Currently either toggles cursor sensitivity or switches cursor
+     *
+     * @param togglesSensitivity
+     */
+    public void setVolUpTogglesSensitivity(boolean togglesSensitivity) {
+        volUpTogglesSensitivity = togglesSensitivity;
     }
 }
