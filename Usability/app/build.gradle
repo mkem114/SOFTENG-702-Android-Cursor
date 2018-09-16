@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 27
     defaultConfig {
-        applicationId "nz.ac.auckland.cursor"
+        applicationId "nz.ac.auckland.usabilitytest"
         minSdkVersion 24
         targetSdkVersion 27
         versionCode 1
