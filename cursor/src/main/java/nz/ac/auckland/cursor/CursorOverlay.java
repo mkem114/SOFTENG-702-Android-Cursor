@@ -27,92 +27,76 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Objects;
 
 public class CursorOverlay extends AppCompatActivity implements SensorEventListener {
-
-    enum VolumeBtnState {
-        REST,
-        VOL_DOWN_LONG,
-        VOL_DOWN,
-        VOL_UP_LONG,
-        VOL_UP,
-        BOTH,
-    }
-
-    enum CursorSensitivity {
-        DWELL,
-        SMOOTHEST,
-        NO_DWELL
-    }
-
     private static final float STANDARD_SCREEN_WIDTH = 720;
     private static final int STANDARD_CURSOR_HEIGHT = 60;
     private static final int STANDARD_CURSOR_WIDTH = 70;
 
-    private List<Cursor> cursors = new ArrayList<>();
-
     private static final int DWELL_WINDOW = 80;
     private static final int DWELL_THRESHOLD_MULTIPLIER = 80;
     private static final float MOVEMENT_THRESHOLD_MULTIPLIER = 5;
-
-    private CursorSensitivity currentCursorSensitivity;
-    private float screenSizeFactor;
-    private int dwellThreshold;
-    private int[] xArr = new int[DWELL_WINDOW];
-    private int[] yArr = new int[DWELL_WINDOW];
-
-    private float pitch;
-    private float roll;
-    private int x;
-    private int y;
-    private int dy = 0;
-    private int dx = 0;
 
     //depends on display size
     private int maxX;
     private int maxY;
     private int xCentre;
     private int yCentre;
+    private float screenSizeFactor;
 
     //depends on calibrated pitch and roll
     private float pitchOffset;
     private float rollOffset;
 
-    //multiplier (z height) for mapping pitch/roll to up/right
-    private double pitchMultiplier;
-    private double rollMultiplier;
-    // sensitivity too
-    private float changeSensitivity;
+    //physical buttons and tapping
+    private VolumeBtnState volumeBtnState;
+    private boolean disableUpHandler = false;
+    private boolean volUpTogglesSensitivity;
+    public Handler messageHandler = new MessageHandler();
+    protected ServiceConnection mServerConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
+        }
 
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    };
+
+    //cursor
+    private List<Cursor> cursors = new ArrayList<>();
+    private CursorSensitivity currentCursorSensitivity;
+    private float changeSensitivity;
+    private int[] xArr = new int[DWELL_WINDOW];
+    private int[] yArr = new int[DWELL_WINDOW];
+    private int dwellThreshold;
+
+    //sensors
+    private SensorManager sensorManager;
     private float[] rotationMatrix = new float[9];
     private float[] gravity = new float[3];
     private float[] geomagnetic = new float[3];
     private float[] orientationValues = new float[3];
 
-    private VolumeBtnState volumeBtnState;
-    private boolean disableUpHandler = false;
-    private boolean volUpTogglesSensitivity;
-
-    private SensorManager sensorManager;
-    private static final String TAG = "βTapModelTest";
-    public Handler messageHandler = new MessageHandler();
-
-    protected ServiceConnection mServerConn = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder binder) {}
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {}
-    };
+    private float pitch;
+    private float roll;
+    private double pitchMultiplier;
+    private double rollMultiplier;
+    private int x;
+    private int y;
+    private int dy = 0;
+    private int dx = 0;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -124,51 +108,61 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         initialiseCoordinates();
     }
 
-    private void initialiseBackTapService() {
-        ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
-                "com.prhlt.aemus.BoDTapService.BoDTapService");
+    @Override
+    protected void onStart() {
+        super.onStart();
 
-        Intent intent = new Intent();
-        intent.putExtra("MESSENGER", new Messenger(messageHandler));
-        intent.setComponent(componentName);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
+        setCursorSensitivity(CursorSensitivity.SMOOTHEST);
+        setVolUpTogglesSensitivity(false);
 
-        getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
-        ComponentName c = getApplication().startService(intent);
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
+                SensorManager.SENSOR_DELAY_GAME);
+        sensorManager.registerListener(this,
+                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
+                SensorManager.SENSOR_DELAY_GAME);
 
-        if (c == null) {
-            new Thread(){
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(4000);
-                        finish();
-                        System.exit(0);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }.start();
-        }
+        initialiseBackTapService();
     }
 
+
     private void initialiseCursors() {
-        Drawable drawable1 = Objects.requireNonNull(ContextCompat.
+        Drawable drawableArrow = Objects.requireNonNull(ContextCompat.
                 getDrawable(getBaseContext(), R.drawable.cursor));
-        Drawable drawable2 = Objects.requireNonNull(ContextCompat.
+        Drawable drawableCrosshair = Objects.requireNonNull(ContextCompat.
                 getDrawable(getBaseContext(), R.drawable.cursor2));
 
-        Cursor c1 = new Cursor(drawable1, getRealWidth(STANDARD_CURSOR_WIDTH), getRealHeight(STANDARD_CURSOR_HEIGHT), 0, 0);
-        Cursor c1small = new Cursor(drawable1, getRealWidth(STANDARD_CURSOR_WIDTH / 2), getRealHeight(STANDARD_CURSOR_WIDTH / 2), 0, 0);
-        Cursor c2 = new Cursor(drawable2, getRealWidth(60), getRealHeight(60), getRealWidth(30), getRealHeight(30));
-        Cursor c2small = new Cursor(drawable2, getRealWidth(30), getRealHeight(30), getRealWidth(15), getRealHeight(15));
+        Cursor arrow = new Cursor(drawableArrow, getRealWidth(STANDARD_CURSOR_WIDTH), getRealHeight(STANDARD_CURSOR_HEIGHT), 0, 0);
+        Cursor smallArrow = new Cursor(drawableArrow, getRealWidth(STANDARD_CURSOR_WIDTH / 2), getRealHeight(STANDARD_CURSOR_WIDTH / 2), 0, 0);
+        Cursor crosshair = new Cursor(drawableCrosshair, getRealWidth(60), getRealHeight(60), getRealWidth(30), getRealHeight(30));
+        Cursor smallCrosshair = new Cursor(drawableCrosshair, getRealWidth(30), getRealHeight(30), getRealWidth(15), getRealHeight(15));
 
-        cursors.add(c1);
-        cursors.add(c1small);
-        cursors.add(c2);
-        cursors.add(c2small);
+        cursors.add(arrow);
+        cursors.add(smallArrow);
+        cursors.add(crosshair);
+        cursors.add(smallCrosshair);
+
         cursors.get(0).updateLocation(xCentre, yCentre);
         findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
     }
+
+    private int getRealHeight(int height) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
+        return (int) (screenSizeFactor * height);
+    }
+
+    private int getRealWidth(int width) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
+        return (int) (screenSizeFactor * width);
+    }
+
 
     private void initialiseCoordinates() {
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
@@ -193,48 +187,37 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         rollOffset = 0;
     }
 
+
+    private void initialiseBackTapService() {
+        ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
+                "com.prhlt.aemus.BoDTapService.BoDTapService");
+
+        Intent intent = new Intent();
+        intent.putExtra("MESSENGER", new Messenger(messageHandler));
+        intent.setComponent(componentName);
+
+        getApplication().bindService(intent, mServerConn, Context.BIND_AUTO_CREATE);
+        ComponentName c = getApplication().startService(intent);
+
+        if (c == null) {
+            new Thread() {
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(4000);
+                        finish();
+                        System.exit(0);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }.start();
+        }
+    }
+
+
     @Override
-    protected void onStart() {
-        super.onStart();
-
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        setCursorSensitivity(CursorSensitivity.SMOOTHEST);
-        setVolUpTogglesSensitivity(false);
-
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER),
-                SensorManager.SENSOR_DELAY_GAME);
-        sensorManager.registerListener(this,
-                sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD),
-                SensorManager.SENSOR_DELAY_GAME);
-
-        initialiseBackTapService();
-    }
-
-    private int getRealHeight(int height) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        return (int) (screenSizeFactor * height);
-    }
-
-    private int getRealWidth(int width) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        return (int) (screenSizeFactor * width);
-    }
-
-    /**
-     * Cycles between different cursor appearances
-     */
-    public void toggleNextCursor() {
-        Collections.rotate(cursors, -1);
-        findViewById(android.R.id.content).getOverlay().clear();
-        cursors.get(0).updateLocation(x, y);
-        findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
     @Override
@@ -242,6 +225,18 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         super.onStop();
         sensorManager.unregisterListener(this);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
+                "com.prhlt.aemus.BoDTapService.BoDTapService");
+        Intent intent = new Intent();
+        intent.setComponent(componentName);
+        getApplication().stopService(intent);
+        getApplication().unbindService(mServerConn);
+    }
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
@@ -293,13 +288,11 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         return true;
     }
 
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) { }
-
     private void calibrate() {
         pitchOffset = pitch;
         rollOffset = roll;
     }
+
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -347,21 +340,22 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
             return;
         }
 
-
         if (Math.abs(dy - tempdy) > minPixelChange) {
             dy = tempdy;
             y = yArr[0];
             y = y > maxY ? maxY : y;
             y = y < 0 ? 0 : y;
         }
-
         if (Math.abs(dx - tempdx) > minPixelChange) {
             dx = tempdx;
             x = xArr[0];
             x = x > maxX ? maxX : x;
             x = x < 0 ? 0 : x;
         }
-        if (volumeBtnState == VolumeBtnState.VOL_DOWN) simulateTouchMove();
+
+        if (volumeBtnState == VolumeBtnState.VOL_DOWN) {
+            simulateTouchMove();
+        }
         cursors.get(0).updateLocation(x, y);
     }
 
@@ -413,7 +407,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
     }
 
     /**
-     * API method for developer for set sensitivity
+     * Set sensitivity
      * toggleNextCursorSensitivity() cycles between these levels
      *
      * @param sensitivity DWELL: if we think you intend on dwelling on the same location, we will keep the cursor
@@ -444,6 +438,16 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
     }
 
     /**
+     * Set what vol up button does
+     * Currently either toggles cursor sensitivity or switches cursor
+     *
+     * @param togglesSensitivity
+     */
+    public void setVolUpTogglesSensitivity(boolean togglesSensitivity) {
+        volUpTogglesSensitivity = togglesSensitivity;
+    }
+
+    /**
      * Cycles between different cursor preset sensitivity levels
      */
     public void toggleNextCursorSensitivity() {
@@ -451,6 +455,19 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         currentCursorSensitivity = CursorSensitivity.values()[nextOrdinal];
     }
 
+    /**
+     * Cycles between different cursor appearances
+     */
+    public void toggleNextCursor() {
+        Collections.rotate(cursors, -1);
+        findViewById(android.R.id.content).getOverlay().clear();
+        cursors.get(0).updateLocation(x, y);
+        findViewById(android.R.id.content).getOverlay().add(cursors.get(0).getDrawable());
+    }
+
+    /**
+     * Simulates touch down at current cursor location
+     */
     public void simulateTouchDown() {
         long upTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
@@ -460,6 +477,9 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         downEvent.recycle();
     }
 
+    /**
+     * Simulates touch up at current cursor location
+     */
     public void simulateTouchUp() {
         long downTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
@@ -469,6 +489,9 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         upEvent.recycle();
     }
 
+    /**
+     * Simulates a drag event holding down the cursor
+     */
     public void simulateTouchMove() {
         long moveTime = SystemClock.uptimeMillis();
         long eventTime = SystemClock.uptimeMillis();
@@ -478,16 +501,6 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         moveEvent.recycle();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        ComponentName componentName = new ComponentName("com.prhlt.aemus.BoDTapService",
-                "com.prhlt.aemus.BoDTapService.BoDTapService");
-        Intent intent = new Intent();
-        intent.setComponent(componentName);
-        getApplication().stopService(intent);
-        getApplication().unbindService(mServerConn);
-    }
 
     public class MessageHandler extends Handler {
         @Override
@@ -516,16 +529,5 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
                 e.printStackTrace();
             }
         }
-    }
-
-    /**
-     * API method for developer to set what vol up button does
-     * Currently either toggles cursor sensitivity or switches cursor
-     *
-     * @param togglesSensitivity
-     */
-    public void setVolUpTogglesSensitivity(boolean togglesSensitivity) {
-        volUpTogglesSensitivity = togglesSensitivity;
-
     }
 }

@@ -5,7 +5,7 @@ Pointing and clicking with accelerometers
 
 ## Use
 
-- VOL_DOWN - simulate touch press (drag/drop supported!)
+- VOL_DOWN - simulate touch press (drag/drop supported if you hold down!)
 - VOL_UP - cycle through available cursors
 - VOL_UP (Long press) - toggle focused mode (decrease sensitivity, slow down movements)
 - Both VOL_UP and VOL_DOWN (short tap) - calibrate to centre
@@ -24,7 +24,9 @@ You want to extend the current Activity using the Cursor Activity class. This cl
 You can bind to onSensorChanged's super method to listen to sensor changes.
 
 - setCursorSensitivity(CursorSensitivity sensitivity) - sets the current cursor's sensitivity
+- setVolUpTogglesSensitivity(boolean togglesSensitivity) - Set what vol up button does. Currently either toggles cursor sensitivity or switches cursor
 - toggleNextCursorSensitivity() - toggles to the next cursor's preset sensitivity
+- toggleNextCursor() - cycles between different cursor appearances
 - simulateTouchMove() - simulate a touch move event on the current position
 - simulateTouchDown() - simulate a touch down event on the current position
 - simulateTouchUp() - simulate a touch release event on the current position
