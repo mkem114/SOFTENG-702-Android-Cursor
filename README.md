@@ -12,6 +12,7 @@ For GitLab, if the link doesn't work, go to Wiki > Releases: http://gitlab.necta
 - Android phone
 - SDK at least 24 (Android 7.0)
     - Target SDK is 27 (Android 8.1)
+- You need to allow installation of apps from sources other than the Play Store
 
 ## Use
 
@@ -31,6 +32,44 @@ For GitLab, if the link doesn't work, go to Wiki > Releases: http://gitlab.necta
 - Single-handed use
 - Phone use without occlusion of the screen
 - Projecting phone screen onto a display and interacting (e.g. for demos)
+
+## FindFood
+
+This app uses the internet to find restaurants around you. For each result, you can add a note about the restaurant, which will be saved across sessions.
+
+Inputs: 
+- Your location will be retrieved via your device’s GPS. 
+- You can type in your notes following the instructions onscreen.
+
+Outputs: 
+- You will be displayed with a list of restaurants around you (sorted by location proximity)
+- You will be displayed the restaurant information available when you click into the restaurant's details
+
+Workflow:
+1. open the app, it will retrieve your location
+2. select a restaurant
+3. click the button to add a note
+4. the first 4 lines of the note will be displayed on screen (as preview)
+5. click on the note to view or edit it
+6. long click the note and you'll be able to remove it
+7. you can add multiple notes for the same restaurant
+8. these notes will be saved across sessions (stored in a database)
+
+## User Study App
+
+Workflow:
+1. This app comprises of 8 buttons
+2. You can select what the volume up button (short press) does with the settings radio buttons, and use the physical buttons to configure the cursor
+3. Start the study by clicking any button
+4. All but one of the buttons are greyed out
+5. Click that button that's "lit up"
+6. Once you've successfully clicked the button, another button will "light up"
+7. When all the buttons light up (after 20 clicks), the study has finished
+8. Logs can be retrieved from the phone's internal storage at Android/data/nz.ac.auckland.cursor/logs
+    - the first few lines list the buttons and print their IDs respectively
+    - the following 20 lines are the button ID and device system time (ms) at which they were clicked
+9. We take the difference between these times to accurately calculate the time taken to click a button
+10. We will perform data analysis on this data to see times taken with different pointing and clicking methods, and whether button locations impact on performance
 
 ## Physical Buttons
 
