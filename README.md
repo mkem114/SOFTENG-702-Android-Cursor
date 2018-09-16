@@ -7,8 +7,8 @@ Pointing and clicking with accelerometers
 
 - VOL_DOWN - simulate touch press (drag/drop supported if you hold down!)
 - VOL_UP - cycle through available cursors
-- VOL_UP (Long press) - toggle focused mode (decrease sensitivity, slow down movements)
-- Both VOL_UP and VOL_DOWN (short tap) - calibrate to centre
+- VOL_UP (long press) - toggle focused mode (decrease sensitivity, slow down movements)
+- Both VOL_UP and VOL_DOWN together (short tap) - calibrate to centre
 
 ## Install
 
@@ -16,19 +16,19 @@ Run `gradle clean installDebug` locally
 
 ## For developers
 
-Install the library `cursor' by importing it using New -> Import Module and selecting the cursor module in master
+Install the library `cursor` by importing it using New -> Import Module and selecting the cursor module in master
 
 ## Customization
 
 You want to extend the current Activity using the Cursor Activity class. This class allows your view to use the cursor.
 You can bind to onSensorChanged's super method to listen to sensor changes.
 
-- setCursorSensitivity(CursorSensitivity sensitivity) - sets the current cursor's sensitivity
-- setVolUpTogglesSensitivity(boolean togglesSensitivity) - Set what vol up button does. Currently either toggles cursor sensitivity or switches cursor
-- toggleNextCursorSensitivity() - toggles to the next cursor's preset sensitivity
-- toggleNextCursor() - cycles between different cursor appearances
-- simulateTouchMove() - simulate a touch move event on the current position
-- simulateTouchDown() - simulate a touch down event on the current position
-- simulateTouchUp() - simulate a touch release event on the current position
+- `setCursorSensitivity(CursorSensitivity sensitivity)` - sets the current cursor's sensitivity
+- `setVolUpTogglesSensitivity(boolean togglesSensitivity)` - Set what vol up button does. Currently either toggles cursor sensitivity or switches cursor
+- `toggleNextCursorSensitivity()` - toggles to the next cursor's preset sensitivity
+- `toggleNextCursor()` - cycles between different cursor appearances
+- `simulateTouchMove()` - simulate a touch move event on the current position
+- `simulateTouchDown()` - simulate a touch down event on the current position
+- `simulateTouchUp()` - simulate a touch release event on the current position
 
 See FindFood for an example of a complete app that has our library imported
