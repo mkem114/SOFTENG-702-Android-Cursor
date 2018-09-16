@@ -46,6 +46,10 @@ _See FindFood for an example of a complete app that has our library imported_
 
 Currently, as a proof of concept, the volume up button can be configured to toggle cursor sensitivity or switch cursor. This is an example of settings the application developer using our library can provide, to give their users more fine-grained control.
 
+_User Study app provides this setting, so users can set VOL_UP to change cursor sensitivity, and select the mode that they prefer (see Cursor Sensitivity Levels below)._
+
+_FindFood does not provide this setting, and the developer (us) has set in the code that VOL_UP changes the cursor appearance. The user therefore cannot change the cursor sensitivity._
+
 ## Cursor Sensitivity Levels
 
 *   DWELL: if we think you intend on dwelling on the same location, we will keep the cursor stationary from jitter
