@@ -26,7 +26,8 @@ For GitLab, if the link doesn't work, go to Wiki > Releases: http://gitlab.necta
 ### Points to note
 - Each page has it's own cursor, thus cursor selection, sensitivity, and calibration is for that page only
     - In FindFood, the restaurants list is a page, and every time you click a restaurant it's a new page
-- Back-tapping is an external service and is not 100% stable. Sensitivity also depends on the specific device, and may be too sensitive or too insensitive.
+- Back-tapping is an external service and is not 100% stable. Sensitivity also depends on the specific device, and may be too sensitive or too insensitive
+    - We have also configured it so that double-tapping on the back of the device also performs a click, as double-tapping may be more sensitive than single-tapping
 
 ### Use Cases
 - Single-handed use
