@@ -115,7 +115,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeFactor = displayMetrics.widthPixels / STANDARD_SCREEN_WIDTH;
-        setCursorSensitivity(CursorSensitivity.SMOOTHEST);
+        setCursorSensitivity(CursorSensitivity.NO_DWELL);
         setVolUpTogglesSensitivity(false);
 
         sensorManager.registerListener(this,
