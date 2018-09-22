@@ -16,10 +16,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.util.Log;
-import android.view.WindowManager;
-import android.widget.TextView;
-import android.widget.Toast;
 import android.os.SystemClock;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -27,16 +23,15 @@ import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.WindowManager;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Objects;
 
 public class CursorOverlay extends AppCompatActivity implements SensorEventListener {
@@ -171,7 +166,7 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         Point displaySize = new Point();
         display.getSize(displaySize);
         maxX = displaySize.x;
-        maxY = displaySize.y;
+        maxY = displaySize.y - getStatusBarHeight();
         xCentre = maxX / 2;
         yCentre = maxY / 2;
 
@@ -185,6 +180,15 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
 
         pitchOffset = 0;
         rollOffset = 0;
+    }
+
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
     }
 
 
@@ -328,14 +332,14 @@ public class CursorOverlay extends AppCompatActivity implements SensorEventListe
         if (Math.abs(dy - tempdy) > minPixelChange) {
             dy = tempdy;
             y = yArr[0];
-            y = y > maxY ? maxY : y;
-            y = y < 0 ? 0 : y;
+            y = y > maxY - 2 ? maxY - 2 : y;
+            y = y < 2 ? 2 : y;
         }
         if (Math.abs(dx - tempdx) > minPixelChange) {
             dx = tempdx;
             x = xArr[0];
-            x = x > maxX ? maxX : x;
-            x = x < 0 ? 0 : x;
+            x = x > maxX - 2 ? maxX - 2 : x;
+            x = x < 2 ? 2 : x;
         }
 
         if (volumeBtnState == VolumeBtnState.VOL_DOWN) {
